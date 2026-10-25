@@ -1,0 +1,12 @@
+build/
+test/out/
+manual/mask_a3.html
+manual/mask_a4.html
+manual/png/
+__pycache__/
+*.o
+.DS_Store
+# never commit ISLA firmware or files extracted from it
+*.swu
+rootfs/
+*.desc
