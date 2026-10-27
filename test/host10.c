@@ -1,5 +1,5 @@
-/* Oscillator slot 64 played from a fresh instance.
- * usage: host10 <plugin-uri> <out.wav> */
+/* PCR-M30 GM2-set message test: plays raw MIDI exactly as the PCR sends it.
+ * usage: host6 <uri> <out.wav>   (slot 1 = 440 Hz test tone, root 60) */
 #include <lilv/lilv.h>
 #include <lv2/atom/atom.h>
 #include <lv2/atom/util.h>
@@ -47,7 +47,7 @@ int main(int argc, char** argv) {
     lilv_instance_connect_port(in, 0, &mid);
     lilv_instance_connect_port(in, 1, L); lilv_instance_connect_port(in, 2, R);
     lilv_instance_connect_port(in, 3, IL); lilv_instance_connect_port(in, 4, IR);
-    ctl[idx("slot")] = 64;
+    ctl[idx("sample")] = 3;
     lilv_instance_activate(in);
 
     #define ON2(t,n) { t, 3, { 0x90, n, 127 } }
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
             lv2_atom_sequence_append_event(&mid.seq, sizeof mid.buf + sizeof(LV2_Atom_Sequence_Body), &x.e);
             ++ei;
         }
-        { ctl[idx("slot")] = 64; }
+        { ctl[idx("sample")] = 3; }
         lilv_instance_run(in, BLOCK);
         for (int i = 0; i < BLOCK && pos + i < total; ++i) {
             out[(pos + i) * 2] = (int16_t)(fmaxf(-1, fminf(1, L[i])) * 32767);

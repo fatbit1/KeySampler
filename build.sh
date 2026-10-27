@@ -24,10 +24,9 @@ cc $CFLAGS -o build/native/keysampler.so src/keysampler.c -lm -lpthread
 echo "built build/aarch64/keysampler.so and build/native/keysampler.so"
 
 # assemble the ready-to-copy bundle
-B=build/dspcard/lv2/keysampler.lv2
+B=build/dspcard/plugins/lv2/keysampler.lv2
 rm -rf build/dspcard && mkdir -p $B/samples
 cp build/aarch64/keysampler.so $B/keysampler.so
 cp src/keysampler.ttl $B/keysampler.ttl
 cp src/manifest.ttl $B/
-[ -f test/samples/A440.wav ] && cp test/samples/A440.wav $B/samples/00test.wav
 echo "bundle: $B"

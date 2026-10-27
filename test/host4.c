@@ -51,7 +51,7 @@ int main(int argc, char** argv) {
     lilv_instance_connect_port(in, 0, &mid);
     lilv_instance_connect_port(in, 1, L); lilv_instance_connect_port(in, 2, R);
     lilv_instance_connect_port(in, 3, IL); lilv_instance_connect_port(in, 4, IR);
-    { LilvNode* n = lilv_new_string(w, "slot"); ctl[lilv_port_get_index(p, lilv_plugin_get_port_by_symbol(p, n))] = 2; lilv_node_free(n); }
+    { LilvNode* n = lilv_new_string(w, "sample"); ctl[lilv_port_get_index(p, lilv_plugin_get_port_by_symbol(p, n))] = getenv("SAMPLE") ? atof(getenv("SAMPLE")) : 1; lilv_node_free(n); }
     lilv_instance_activate(in);
     LV2_URID midi_t = map_uri(NULL, LV2_MIDI__MidiEvent), seq_t = map_uri(NULL, LV2_ATOM__Sequence);
 

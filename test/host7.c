@@ -1,5 +1,5 @@
-/* Start / loop point sync test (sec / ms / smp parameters and CC point control).
- * usage: host7 <plugin-uri> <out.wav> */
+/* PCR-M30 GM2-set message test: plays raw MIDI exactly as the PCR sends it.
+ * usage: host6 <uri> <out.wav>   (sample 0 = 440 Hz test tone, root 60) */
 #include <lilv/lilv.h>
 #include <lv2/atom/atom.h>
 #include <lv2/atom/util.h>

@@ -1,5 +1,5 @@
-/* Oscillator slots 61-64 and filter envelope test.
- * usage: host9 <plugin-uri> <out.wav> */
+/* PCR-M30 GM2-set message test: plays raw MIDI exactly as the PCR sends it.
+ * usage: host6 <uri> <out.wav>   (sample 0 = 440 Hz test tone, root 60) */
 #include <lilv/lilv.h>
 #include <lv2/atom/atom.h>
 #include <lv2/atom/util.h>
@@ -52,10 +52,10 @@ int main(int argc, char** argv) {
     #define ON2(t,n) { t, 3, { 0x90, n, 127 } }
     #define OFF2(t,n) { t, 3, { 0x80, n, 0 } }
     Ev ev[] = {
-        ON2(0.10, 60), OFF2(0.50, 60),  /* slot 61 sine */
-        ON2(0.60, 60), OFF2(1.00, 60),  /* slot 62 triangle */
-        ON2(1.10, 60), OFF2(1.50, 60),  /* slot 63 square */
-        ON2(1.60, 60), OFF2(2.00, 60),  /* slot 64 saw */
+        ON2(0.10, 60), OFF2(0.50, 60),  /* source -59 sine */
+        ON2(0.60, 60), OFF2(1.00, 60),  /* source -58 triangle */
+        ON2(1.10, 60), OFF2(1.50, 60),  /* source -57 square */
+        ON2(1.60, 60), OFF2(2.00, 60),  /* source -56 saw */
         ON2(2.10, 108), OFF2(2.50, 108),/* saw C8, aliasing check */
         ON2(2.70, 48), OFF2(4.20, 48),  /* saw C3, filter env ON */
         ON2(4.60, 48), OFF2(6.10, 48),  /* saw C3, filter env OFF */
@@ -77,7 +77,7 @@ int main(int argc, char** argv) {
             ++ei;
         }
         { double now = (double)pos / RATE;
-          ctl[idx("slot")] = now < 0.55 ? 61 : now < 1.05 ? 62 : now < 1.55 ? 63 : 64;
+          ctl[idx("sample")] = now < 0.55 ? 0 : now < 1.05 ? 1 : now < 1.55 ? 2 : 3;
           ctl[idx("release")] = 20; ctl[idx("mode")] = 0; /* One Shot: oscillators must still stop on release */
           ctl[idx("filter")] = now > 2.6 ? 1 : 0; ctl[idx("cutoff")] = 20; ctl[idx("resonance")] = 0;
           ctl[idx("fenv")] = now < 4.5 ? 1 : 0; ctl[idx("fenv_amount")] = 60;

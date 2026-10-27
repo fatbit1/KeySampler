@@ -5,17 +5,21 @@
 
 | Host | Checks |
 | --- | --- |
-| host5 `record` / `reload` | recording from the bus input, reloading the slot |
+| host5 `record` / `reload` | recording from the bus input, reloading by number; `ROUNDTRIP=1` sends the new number back the way the S2400 does |
 | host6 | every message the PCR-M30 GM2 set sends |
 | host7 | start / loop point parameters and controllers |
 | host8 | portamento and legato |
 | host9, host10 | oscillator slots 61–64 and the filter envelope |
-| host11 | buttons B1–B4 |
-| host12 | B5 Save to Menu / B6 Restore Menu (needs the fake sushi server) |
+| host14 | PCR layout: buttons B1–B6, L1–L3, sliders S1–S5 |
+| host15 | Loop / Ping-Pong modes (plays a ramp as Sample 4) |
+| host16 | Ladder filter: response, resonance, stability under fast cutoff jumps |
+| host17 | LFO to pitch / filter / volume, selected with B4 |
+| host18 | Save/Restore item: scrolling past does nothing; Delete... then Confirm Delete deletes |
+| host13 | Save/Restore menu item and L3 (needs the fake sushi server) |
 
 Rendered audio is written to `test/out/` for listening or analysis.
 
-## Save to Menu test (host12)
+## Save/Restore test (host13)
 
 `fake_sushi.py` imitates the gRPC control API of [Elk Audio's sushi](https://github.com/elk-audio/sushi),
 the audio host on the DSP Card. It needs `pip install grpcio protobuf` and a compiled

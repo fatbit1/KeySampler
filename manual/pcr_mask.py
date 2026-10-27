@@ -49,16 +49,17 @@ def mask_svg():
     # ---- L1-L3 card (not used by KeySampler)
     o.append(rrect(57, 140, 310, 262, 1.2))
     o.append(rrect(70, 175, 296, 228, 0.8, stroke=CUT, dash="1.2 0.8"))
-    for x, lab in [(105, "L1"), (183, "L2"), (262, "L3")]:
-        o.append(text(X(x), Y(166), lab, 2.2, 700, fill=SOFT))
-    o.append(text(X(183), Y(246), "not used by KeySampler", 1.9, 500, fill=SOFT))
+    for x, lab, cc, col in [(105, "RECORD", "L1 · CC 80", ACC), (183, "SAVE", "L2 · CC 81", INK), (262, "RESTORE", "L3 · CC 82", INK)]:
+        o.append(text(X(x), Y(166), lab, 2.3, 800, fill=col))
+        o.append(text(X(x), Y(240), cc, 1.7, 500, fill=SOFT))
+    o.append(text(X(183), Y(250), "set L1-L3 to CC 80-82 (latch), save as PCR memory 1", 1.45, 500, fill=SOFT))
     o.append(text(X(296), Y(257), "KeySampler", 1.6, 700, anchor="end", fill=ACC))
 
     # ---- main strip
     o.append(rrect(380, 28, 1925, 265, 3.0, w=0.45))
     # knob group labels
     o.append(group_label(395, 568, 40, "FILTER"))
-    o.append(group_label(580, 860, 40, "VIBRATO"))
+    o.append(group_label(580, 860, 40, "LFO (B4)"))
     o.append(group_label(872, 1046, 40, "TUNE"))
     for xb in (573, 866, 1053):
         o.append(f'<line x1="{X(xb):.2f}" y1="{Y(34):.2f}" x2="{X(xb):.2f}" y2="{Y(62):.2f}" stroke="{INK}" stroke-width="0.4"/>')
@@ -78,17 +79,16 @@ def mask_svg():
 
     # lower-middle window: B1-B6
     o.append(rrect(714, 181, 1136, 237, 0.8, stroke=CUT, dash="1.2 0.8"))
-    btns = [(752, "RECORD", "Prog −", "B1"), (823, "FILTER", "Prog +", "B2"), (890, "MODE", "CC 65", "B3"),
-            (960, "GLIDE", "CC 127", "B4"), (1030, "SAVE", "CC 126", "B5"), (1100, "RESTORE", "SysEx", "B6")]
+    btns = [(752, "FILTER", "Prog −", "B1"), (823, "MODE", "Prog +", "B2"), (890, "GLIDE", "CC 65", "B3"),
+            (960, "LFO TO", "CC 127", "B4"), (1030, "", "CC 126", "B5"), (1100, "VOL/FILT", "SysEx", "B6")]
     for x, lab, cc, b in btns:
-        o.append(text(X(x), Y(177), lab, 2.3, 800, fill=ACC if lab == "RECORD" else INK))
+        if lab: o.append(text(X(x), Y(177), lab, 2.3, 800, fill=INK))
         o.append(text(X(x), Y(250), f"{b} · {cc}", 1.7, 500, fill=SOFT))
-    o.append(text(X(752), Y(256.5), "on / off", 1.45, 500, fill=SOFT))
-    o.append(text(X(823), Y(256.5), "Off›LP›BP›HP", 1.45, 500, fill=SOFT))
-    o.append(text(X(890), Y(256.5), "1-Shot›Gate›Loop", 1.45, 500, fill=SOFT))
-    o.append(text(X(960), Y(256.5), "on / off", 1.45, 500, fill=SOFT))
-    o.append(text(X(1030), Y(256.5), "changes › menu", 1.45, 500, fill=SOFT))
-    o.append(text(X(1100), Y(256.5), "menu values", 1.45, 500, fill=SOFT))
+    o.append(text(X(752), Y(256.5), "Off›LP›BP›HP", 1.45, 500, fill=SOFT))
+    o.append(text(X(823), Y(256.5), "1Sh›Gate›Loop›PP", 1.45, 500, fill=SOFT))
+    o.append(text(X(890), Y(256.5), "on / off", 1.45, 500, fill=SOFT))
+    o.append(text(X(960), Y(256.5), "Pitch›Filt›Vol", 1.45, 500, fill=SOFT))
+    o.append(text(X(1100), Y(256.5), "S1-S4 envelope", 1.45, 500, fill=SOFT))
 
     # display window
     o.append(rrect(1160, 107, 1335, 232, 0.8, stroke=CUT, dash="1.2 0.8"))
@@ -100,21 +100,21 @@ def mask_svg():
     # slider windows
     o.append(rrect(1360, 67, 1616, 233, 0.8, stroke=CUT, dash="1.2 0.8"))
     o.append(rrect(1640, 67, 1895, 233, 0.8, stroke=CUT, dash="1.2 0.8"))
-    o.append(group_label(1362, 1488, 37, "SAMPLE"))
-    o.append(group_label(1500, 1762, 37, "ENVELOPE"))
-    o.append(f'<line x1="{X(1770):.2f}" y1="{Y(32):.2f}" x2="{X(1770):.2f}" y2="{Y(64):.2f}" stroke="{INK}" stroke-width="0.4"/>')
-    sliders = [(1394, "START", "CC 5", "S1"), (1458, "LOOP ST", "A.Touch", "S2"), (1524, "ATTACK", "CC 73", "S3"),
-               (1588, "DECAY", "CC 75", "S4"), (1672, "RELEASE", "CC 72", "S5"), (1737, "SUSTAIN", "CC 93", "S6"),
+    o.append(group_label(1362, 1616, 37, "ENVELOPE · VOL / FILTER (B6)"))
+    o.append(group_label(1640, 1830, 37, "SAMPLE"))
+    o.append(f'<line x1="{X(1836):.2f}" y1="{Y(32):.2f}" x2="{X(1836):.2f}" y2="{Y(64):.2f}" stroke="{INK}" stroke-width="0.4"/>')
+    sliders = [(1394, "ATTACK", "CC 5", "S1"), (1458, "DECAY", "A.Touch", "S2"), (1524, "SUSTAIN", "CC 73", "S3"),
+               (1588, "RELEASE", "CC 75", "S4"), (1672, "START", "CC 72", "S5"), (1737, "LOOP ST", "CC 93", "S6"),
                (1803, "LOOP END", "CC 91", "S7"), (1868, "LEVEL", "CC 7", "S8")]
     for x, lab, cc, sn in sliders:
         o.append(text(X(x), Y(55), lab, 2.05, 700))
         o.append(text(X(x), Y(62.5), cc, 1.6, 500, fill=SOFT))
-    for xb in (1494,):
+    for xb in ():
         o.append(f'<line x1="{X(xb):.2f}" y1="{Y(32):.2f}" x2="{X(xb):.2f}" y2="{Y(64):.2f}" stroke="{INK}" stroke-width="0.4"/>')
     o.append(text(X(1803), Y(37), "", 2))
     # footer
     o.append(text(X(1895), Y(250), "P1 HOLD (CC 64) · P2 EXPRESSION (CC 11) · LEVER PITCH BEND", 1.7, 600, anchor="end", fill=SOFT))
-    o.append(text(X(1895), Y(257), "KEYSAMPLER MAP · PCR MEMORY No.0 : GM2", 1.6, 700, anchor="end", fill=INK, ls=0.15))
+    o.append(text(X(1895), Y(257), "KEYSAMPLER MAP · PCR MEMORY 1 (GM2 + L1-L3 = CC 80-82)", 1.6, 700, anchor="end", fill=INK, ls=0.15))
     return "".join(o)
 
 W = X(1925) + 0.5   # total width in mm

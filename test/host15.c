@@ -1,5 +1,5 @@
-/* Save to Menu (B5) / Restore Menu (B6) test, plus a learned Restore button. Run with test/fake_sushi.py.
- * usage: host12 <plugin-uri> <out.wav> */
+/* Ping-pong / loop mode test: plays Sample 4 (a ramp) at the root note for 2 s.
+ * usage: host15 <plugin-uri> <out.wav>   env MODE, LSMS, LEMS (loop start / end ms) */
 #include <lilv/lilv.h>
 #include <lv2/atom/atom.h>
 #include <lv2/atom/util.h>
@@ -47,30 +47,18 @@ int main(int argc, char** argv) {
     lilv_instance_connect_port(in, 0, &mid);
     lilv_instance_connect_port(in, 1, L); lilv_instance_connect_port(in, 2, R);
     lilv_instance_connect_port(in, 3, IL); lilv_instance_connect_port(in, 4, IR);
+    ctl[idx("sample")] = 5; ctl[idx("mode")] = getenv("MODE") ? atof(getenv("MODE")) : 3;
+    ctl[idx("attack")] = 0; ctl[idx("sustain")] = 1;
+    if (getenv("LSMS")) ctl[idx("loop_start_msec")] = atof(getenv("LSMS"));
+    if (getenv("LEMS")) ctl[idx("loop_end_msec")] = atof(getenv("LEMS"));
     lilv_instance_activate(in);
 
     #define ON2(t,n) { t, 3, { 0x90, n, 127 } }
     #define OFF2(t,n) { t, 3, { 0x80, n, 0 } }
-    #define CCX(t,c,v) { t, 3, { 0xB0, c, v } }
-    #define PC(t,n) { t, 2, { 0xC0, n } }
-    #define GM2(t) { t, 6, { 0xF0, 0x7E, 0x7F, 0x09, 0x03, 0xF7 } }
-    Ev ev[] = {
-        PC(0.05, 1),                                   /* B2: filter -> LP */
-        ON2(0.10, 60), OFF2(0.40, 60),                 /* A: LP, cutoff 100 */
-        CCX(0.50, 74, 0),                              /* R1 cutoff min (sound only) */
-        ON2(0.60, 60), OFF2(0.90, 60),                 /* B: dark, no Set before B5 */
-        GM2(1.00),                                     /* B6: restore menu (filter Off, cutoff 100) */
-        ON2(1.10, 60), OFF2(1.40, 60),                 /* C: back to A's level */
-        PC(1.50, 1), CCX(1.50, 74, 0),                 /* change again */
-        CCX(1.60, 126, 127),                           /* B5: save -> Set filter, cutoff */
-        ON2(1.70, 60), OFF2(2.00, 60),                 /* D: dark (sound unchanged) */
-        CCX(2.25, 20, 127),                            /* learned CC20 = Restore Menu */
-        CCX(2.50, 74, 127), CCX(2.70, 20, 127),        /* R1 open, then CC20 restores */
-        ON2(2.80, 60), OFF2(3.10, 60),                 /* E: dark again (menu now saved values) */
-    };
+    Ev ev[] = { ON2(0.30, 60), OFF2(2.30, 60) };
     int nev = sizeof ev / sizeof ev[0], ei = 0;
     LV2_URID midi_t = map_uri(NULL, LV2_MIDI__MidiEvent), seq_t = map_uri(NULL, LV2_ATOM__Sequence);
-    uint32_t total = (uint32_t)(RATE * 4.2);
+    uint32_t total = (uint32_t)(RATE * 2.6);
     int16_t* out = calloc(total * 2, 2);
     for (uint32_t pos = 0; pos < total; pos += BLOCK) {
         mid.seq.atom.type = seq_t; mid.seq.atom.size = sizeof(LV2_Atom_Sequence_Body);
@@ -84,7 +72,7 @@ int main(int argc, char** argv) {
             lv2_atom_sequence_append_event(&mid.seq, sizeof mid.buf + sizeof(LV2_Atom_Sequence_Body), &x.e);
             ++ei;
         }
-        { double tt = (double)pos / RATE; ctl[idx("cc_learn")] = (tt >= 2.2 && tt < 2.3) ? 30 : 0; }
+        { }
         lilv_instance_run(in, BLOCK);
         for (int i = 0; i < BLOCK && pos + i < total; ++i) {
             out[(pos + i) * 2] = (int16_t)(fmaxf(-1, fminf(1, L[i])) * 32767);

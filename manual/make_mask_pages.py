@@ -13,14 +13,14 @@ ruler_svg=f'<svg width="106mm" height="8mm" viewBox="-2 -1 106 8">{ruler}<text x
 cal=f'''<div class="cal">{ruler_svg}
 <p><b>1. Check the print scale.</b> The bar above must measure exactly 100 mm (print at "actual size" / 100 %). On this mask the R1&ndash;R8 knob centres are 175 mm apart. Measure R1 to R8 on your PCR (centre to centre); if it differs, print again at <b>your measurement &divide; 175 &times; 100 %</b>.</p>
 <p><b>2. Cut</b> along the outer edges and the grey dashed lines (knob holes, windows for the buttons, display and sliders). The small card goes over L1&ndash;L3.</p>
-<p><b>Key:</b> black = KeySampler function; grey = control and the message the PCR sends in GM2 memory 0; orange = groups and Record. The window marked "PCR keyboard buttons" keeps its normal PCR functions.</p></div>'''
+<p><b>Key:</b> black = KeySampler function; grey = control and the message the PCR sends (GM2 set, with L1-L3 set to CC 80-82 and saved as memory 1); orange = groups and Record. The window marked "PCR keyboard buttons" keeps its normal PCR functions.</p></div>'''
 css='''@page { margin: 0; } body { margin:0; font-family: Inter, sans-serif; background:#fff; } svg text { font-family: Inter, sans-serif; }
 .pg { break-after: page; padding: 7mm 6mm 0; } .pg:last-child { break-after: auto; }
 .cal { margin: 3mm 0 0; font-size: 8.3pt; line-height: 1.4; max-width: 255mm; color:#222 } .cal p { margin: 1.2mm 0 }
 .lbl { font-size: 8pt; color:#555; margin: 1.5mm 0 } h1 { font-size: 11pt; margin: 0 0 2mm; }'''
 def svgblock(w,h,inner,vbx=0): return f'<svg width="{w:.2f}mm" height="{h:.2f}mm" viewBox="{vbx:.2f} -0.5 {w:.2f} {h:.2f}" xmlns="http://www.w3.org/2000/svg">{inner}</svg>'
 a3=f'''<!doctype html><html><head><meta charset="utf-8"><title>KeySampler PCR-M30 Mask A3</title><style>{css} @page {{ size: 420mm 297mm; }}</style></head><body><section class="pg">
-<h1>KeySampler &middot; Edirol PCR-M30/M50/M80 template (GM2 memory 0)</h1>
+<h1>KeySampler &middot; Edirol PCR-M30/M50/M80 template (memory 1: GM2 + L1-L3)</h1>
 {svgblock(SW+1, SH+1, strip_g, -0.5)}<div style="height:5mm"></div>{svgblock(CW+1, CH+1, card_g(0,0), -0.5)}{cal}</section></body></html>'''
 open('mask_a3.html','w').write(a3)
 half=SW/2; ov=8

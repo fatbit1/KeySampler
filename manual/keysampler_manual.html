@@ -67,7 +67,7 @@
     <div class="sub">Record a sound from the S2400 into a DSP bus and play it chromatically from a MIDI keyboard.</div>
     <div class="bar"></div>
     <table class="meta">
-      <tr><td>Plugin version</td><td>0.17 (LV2 minor version 16)</td></tr>
+      <tr><td>Plugin version</td><td>0.35 (LV2 minor version 35)</td></tr>
       <tr><td>Built for</td><td>S2400 DSP Card firmware 3.1.12</td></tr>
       <tr><td>Controller preset</td><td>Edirol PCR-M30/M50/M80, GM2 set (memory 0)</td></tr>
       <tr><td>Manual date</td><td>25 October 2026</td></tr>
@@ -79,10 +79,10 @@
       <tr><td class="n">2</td><td>Installation</td></tr>
       <tr><td class="n">3</td><td>Quick start</td></tr>
       <tr><td class="n">4</td><td>Recording</td></tr>
-      <tr><td class="n">5</td><td>Banks and slots</td></tr>
+      <tr><td class="n">5</td><td>Sample numbers and projects</td></tr>
       <tr><td class="n">6</td><td>Playing, envelope and sample points</td></tr>
-      <tr><td class="n">7</td><td>Filter, vibrato and pan</td></tr>
-      <tr><td class="n">8</td><td>MIDI control and CC Learn</td></tr>
+      <tr><td class="n">7</td><td>Filter, LFO and pan</td></tr>
+      <tr><td class="n">8</td><td>MIDI control, Save and Restore</td></tr>
       <tr><td class="n">9</td><td>Using the Edirol PCR-M30</td></tr>
       <tr><td class="n">10</td><td>Parameter reference</td></tr>
       <tr><td class="n">11</td><td>Troubleshooting and limitations</td></tr>
@@ -103,14 +103,14 @@
 <h3>Features</h3>
 <ul>
   <li>Records the bus input; starts automatically when sound arrives, stops after 0.4 s of silence (max 30 s)</li>
-  <li>99 banks &times; 64 slots, stored on the DSP Card and kept through power-off</li>
+  <li>Every recording gets its own number (1&ndash;9999), saved with the S2400 project</li>
   <li>16-voice polyphony, velocity, pitch bend, sustain pedal, portamento and legato glide</li>
-  <li>One Shot, Gate and Loop play modes with start and loop points in the S2400's own time format</li>
+  <li>One Shot, Gate, Loop and Ping-Pong play modes with start and loop points in the S2400's own time format</li>
   <li>ADSR envelope</li>
-  <li>Built-in sine, triangle, square and sawtooth oscillators (slots 61&ndash;64)</li>
-  <li>Resonant 12 dB/oct filter per voice (low, band, high pass) with its own ADSR envelope</li>
-  <li>Vibrato with delay, pan, expression</li>
-  <li>MIDI CC control with CC Learn, preset for the Edirol PCR-M30 GM2 map</li>
+  <li>Built-in sine, triangle, square and sawtooth oscillators (Sample 0&ndash;3)</li>
+  <li>Moog-style 24 dB/oct ladder filter per voice (low, band, high pass) with drive, self-oscillation and its own ADSR envelope</li>
+  <li>LFO with delay to pitch (vibrato), filter (wah) or volume (tremolo); pan, expression</li>
+  <li>MIDI CC control laid out for the Edirol PCR-M30 GM2 map</li>
   <li><b>Thru</b> keeps the bus passing its normal audio</li>
 </ul>
 </div>
@@ -129,7 +129,7 @@
   <text x="170" y="66" font-size="9.5" text-anchor="middle" font-weight="700">KeySampler</text>
   <text x="170" y="78" font-size="7" text-anchor="middle" fill="#5a5f69">on DSP bus N</text>
   <rect x="131" y="86" width="78" height="16" rx="3" fill="#f3f4f6" stroke="#5a5f69" stroke-width="0.6"/>
-  <text x="170" y="97" font-size="7.5" text-anchor="middle">Record &#8594; Bank / Slot</text>
+  <text x="170" y="97" font-size="7.5" text-anchor="middle">Record &#8594; Sample No.</text>
   <rect x="131" y="108" width="78" height="16" rx="3" fill="#f3f4f6" stroke="#5a5f69" stroke-width="0.6"/>
   <text x="170" y="119" font-size="7.5" text-anchor="middle">Voices &#8594; Filter &#8594; Pan</text>
   <rect x="244" y="74" width="50" height="40" rx="4" fill="#f3f4f6" stroke="#1b1d21"/>
@@ -162,8 +162,8 @@
 <h3>Copy the plugin to the SD card</h3>
 <ol class="steps">
   <li>Put the S2400's SD card in your computer.</li>
-  <li>Copy the <code>keysampler.lv2</code> folder into <code>dspcard/lv2/</code> on the card. The folder must sit directly inside <code>lv2</code>, not in an extra sub-folder:
-    <div class="mono" style="margin:1.5mm 0 0 2mm; line-height:1.5">SD card / dspcard / lv2 / keysampler.lv2 / keysampler.so<br>SD card / dspcard / lv2 / keysampler.lv2 / manifest.ttl &nbsp;…</div></li>
+  <li>Copy the <code>keysampler.lv2</code> folder into <code>dspcard/plugins/lv2/</code> on the card (the folder where your other DSP plugins are). It must sit directly inside <code>lv2</code>, not in an extra sub-folder:
+    <div class="mono" style="margin:1.5mm 0 0 2mm; line-height:1.5">SD card / dspcard / plugins / lv2 / keysampler.lv2 / keysampler.so<br>SD card / dspcard / plugins / lv2 / keysampler.lv2 / manifest.ttl &nbsp;…</div></li>
   <li>When updating, delete the old <code>keysampler.lv2</code> folder first so no old files remain.</li>
   <li>On a Mac, remove the hidden files Finder adds, then eject the card (replace <code>SDNAME</code> with the card's name):
     <div class="mono" style="margin:1.5mm 0 0 2mm">find /Volumes/SDNAME/dspcard -name ".DS_Store" -delete<br>dot_clean /Volumes/SDNAME</div></li>
@@ -191,21 +191,20 @@
 <ol class="steps">
   <li><b>Choose the bus.</b> Load KeySampler on bus 1 (see <i>MIDI routing</i> below).</li>
   <li><b>Route the pad to it.</b> Hold <span class="keys">Shift</span> and press the pad you want to sample to open Track Settings (S2400 manual p. 56). Set <b>Output</b> to <b>1</b>. Hit the pad: you hear it through KeySampler because <b>Thru</b> is on.</li>
-  <li><b>Pick a slot.</b> In KeySampler's parameters set <b>Bank</b> to this project's number and <b>Slot</b> to an empty slot, e.g. 2.</li>
-  <li><b>Record.</b> Turn <b>Record</b> on (<span class="keys">F1</span> toggles it), hit the pad once, then turn <b>Record</b> off.</li>
-  <li><b>Play.</b> Play the keyboard. Middle C (note 60, the default <b>Root Note</b>) plays the sound at its original pitch.</li>
+    <li><b>Record.</b> Tick <b>Record</b> (or press L1), hit the pad once, then untick it (or press L1 again).</li>
+  <li><b>Play.</b> KeySampler gives the recording a new number and selects it: <b>Sound</b> shows <b>Sample</b> when you re-open the page. Play the keyboard. Middle C (note 60, the default <b>Root Note</b>) plays the sound at its original pitch.</li>
 </ol>
 <h3>Routing a track to a bus</h3>
 <p>With the DSP Card installed, each of the S2400's eight outputs feeds the DSP bus with the same number (DSP manual p. 3). A track's <b>Output</b> in Track Settings therefore selects the bus. Stereo samples play through an output pair: a stereo sound set to output 1 or 2 uses buses 1 and 2. Make that pair stereo in Bus Settings (<b>Mix</b>), or set the track's <b>Output Mix</b> to <i>L+R Mixed</i> to keep it on one bus (S2400 manual p. 56). In Mixer fader mode the output number of each track is shown above its fader (S2400 manual p. 25).</p>
 <h3>MIDI routing</h3>
-<p>KeySampler accepts notes on every MIDI channel. Which bus the S2400 sends keyboard notes to is decided by the S2400. In testing, notes reached <b>bus 1</b> and not the others. If you want KeySampler on another bus, try setting your keyboard or MIDI track to the channel with the same number as the bus. If that does not work, keep KeySampler on bus 1 and route the pads you want to sample to output 1.</p>
+<p>The DSP Card gives each bus its own MIDI channel (from the card's configuration): bus <i>n</i> receives channel <i>n</i>, a stereo pair receives the channel of its first bus (1+2 &rarr; 1, 3+4 &rarr; 3, &hellip;), and <b>every bus also receives channel 16</b>. KeySampler itself plays notes on any channel it is given. So to play KeySampler on bus 3, set the keyboard (or MIDI track) to channel 3, or to channel 16 &mdash; but channel 16 reaches every KeySampler at once.</p>
 <div class="tip"><b>Keep the bus to yourself while recording.</b> Everything that plays into KeySampler's bus is recorded, so route only the pad you are sampling to that bus during a take.</div>
 </section>
 
 <!-- ============================================================ 4 RECORDING -->
 <section class="chapter">
 <h2><span class="n">4</span>Recording</h2>
-<p>KeySampler records whatever arrives at its bus input into the current <b>Bank</b> and <b>Slot</b>.</p>
+<p>KeySampler records whatever arrives at its bus input. Each recording is stored as a new sound with its own number; nothing is ever recorded over.</p>
 <h3>How a recording starts and ends</h3>
 <table>
   <tr><th style="width:34mm">Stage</th><th>What happens</th></tr>
@@ -214,59 +213,72 @@
   <tr><td>Automatic stop</td><td>After 0.4 s below the threshold, or when 30 s have been recorded.</td></tr>
   <tr><td>Manual stop</td><td>Turning <b>Record</b> off ends a recording immediately.</td></tr>
   <tr><td>Clean-up</td><td>Trailing silence is trimmed to 50 ms after the last loud sample and the end gets a short fade-out.</td></tr>
-  <tr><td>Saved</td><td>The recording replaces the contents of the slot and is written to the DSP Card as a 16-bit stereo WAV at the card's sample rate (48 kHz). It is ready to play within a few milliseconds.</td></tr>
+  <tr><td>Saved</td><td>The recording gets the next free number and is written to the DSP Card as <code>sample_NNNN.wav</code> (16-bit stereo, 48 kHz). KeySampler plays it at once, sets <b>Sound</b> to <b>Sample</b> and keeps the number in the hidden <b>Sample ID</b> parameter, so saving the project keeps it.</td></tr>
 </table>
 <p>To record another take, turn <b>Record</b> off and on again. Turning it on while a recording is being saved has no effect.</p>
 <h3>Threshold</h3>
 <ul>
-  <li>If background noise or a reverb tail keeps the recording running (the slot stays silent until it ends), raise <b>Rec Threshold dB</b>, or turn Record off to end the take.</li>
+  <li>If background noise or a reverb tail keeps the recording running (the new sound only plays once it ends), raise <b>Rec Threshold dB</b>, or turn Record off to end the take.</li>
   <li>For very quiet sounds, lower it towards &minus;80 dB.</li>
 </ul>
 <h3>Thru</h3>
-<p><b>Thru</b> (default on; not in the S2400 menu, switched by a learned controller: CC Learn <b>Thru</b>) passes the bus input to the bus output unchanged, so the bus behaves normally. With Thru off, the bus only outputs KeySampler's notes. Thru does not affect recording.</p>
+<p><b>Thru</b> (always on; not in the S2400 menu) passes the bus input to the bus output unchanged, so the bus behaves normally. With Thru off, the bus only outputs KeySampler's notes. Thru does not affect recording.</p>
 <div class="note"><b>Mono buses</b> record mono; a stereo bus pair records stereo. The recorded level is the bus input level before KeySampler's Level, filter and pan.</div>
 </section>
 
-<!-- ============================================================ 5 BANKS & SLOTS -->
+<!-- ============================================================ 5 SAMPLE NUMBERS -->
 <section class="chapter">
-<h2><span class="n">5</span>Banks and slots</h2>
-<p>Think of a cabinet on the DSP Card: <b>Bank</b> chooses a drawer (1&ndash;99) and <b>Slot</b> chooses one of its 64 compartments. Each compartment holds one sound. Bank and Slot together decide which sound plays and where a new recording goes.</p>
+<h2><span class="n">5</span>Sample numbers and projects</h2>
+<p><b>Sound</b> chooses what KeySampler plays. Its menu lists, in order:</p>
+<table class="compact">
+  <tr><th style="width:36mm">Sound</th><th>Plays</th></tr>
+  <tr><td>Sine, Triangle, Square, Saw</td><td>The built-in oscillators. They are part of the plugin, so they can never be recorded over or deleted. New KeySamplers start on Sine, a handy test that notes arrive.</td></tr>
+  <tr><td><b>Sample</b></td><td>This KeySampler's sound: your latest recording, or the last recording you picked by number, whichever came last. After you record, Sound shows <b>Sample</b>. The number is kept in a hidden parameter, <b>Sample ID</b>, that the S2400 saves with the project like any other. Before the first recording or pick, Sample is silent.</td></tr>
+  <tr><td>1 &ndash; 9999</td><td>Any recording on the DSP Card by its number, including ones made in other projects. Picking a number that exists also makes it this KeySampler's <b>Sample</b>.</td></tr>
+</table>
+<p>Every recording gets the next <b>unique number</b> and is stored on the DSP Card under that number, as <code>sample_0001.wav</code>, <code>sample_0002.wav</code> &hellip; Because Sound and Sample ID are saved with the project, loading it brings back exactly the sound it was saved with.</p>
 <div class="fig">
-<svg viewBox="0 0 520 92" width="82%" xmlns="http://www.w3.org/2000/svg">
-  <g font-size="9">
-    <text x="0" y="20" font-weight="600">Bank 1</text><text x="0" y="48" font-weight="600">Bank 2</text><text x="0" y="82" font-weight="600">Bank 99</text>
-    <text x="10" y="64" fill="#5a5f69">&#8942;</text>
+<svg viewBox="0 0 520 96" width="86%" xmlns="http://www.w3.org/2000/svg">
+  <defs><marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1b1d21"/></marker></defs>
+  <g font-size="8.5">
+    <rect x="4" y="8" width="118" height="34" rx="4" fill="#f3f4f6" stroke="#1b1d21"/>
+    <text x="63" y="22" text-anchor="middle" font-weight="600">Record a pad</text><text x="63" y="34" text-anchor="middle" fill="#5a5f69">on any project</text>
+    <rect x="168" y="8" width="150" height="34" rx="4" fill="#fdf4ef" stroke="#c2410c"/>
+    <text x="243" y="22" text-anchor="middle" font-weight="600">sample_0042.wav</text><text x="243" y="34" text-anchor="middle" fill="#5a5f69">new number, on the DSP Card</text>
+    <rect x="364" y="8" width="150" height="34" rx="4" fill="#f3f4f6" stroke="#1b1d21"/>
+    <text x="439" y="22" text-anchor="middle" font-weight="600">Sound = Sample</text><text x="439" y="34" text-anchor="middle" fill="#5a5f69">Sample ID = 42 (hidden)</text>
+    <rect x="364" y="58" width="150" height="34" rx="4" fill="#f3f4f6" stroke="#1b1d21"/>
+    <text x="439" y="72" text-anchor="middle" font-weight="600">Save project</text><text x="439" y="84" text-anchor="middle" fill="#5a5f69">stores both</text>
+    <rect x="168" y="58" width="150" height="34" rx="4" fill="#f3f4f6" stroke="#1b1d21"/>
+    <text x="243" y="72" text-anchor="middle" font-weight="600">Load project later</text><text x="243" y="84" text-anchor="middle" fill="#5a5f69">recording 42 plays again</text>
   </g>
-  <g fill="#f3f4f6" stroke="#5a5f69" stroke-width="0.7">
-    <rect x="52" y="8" width="44" height="18" rx="2"/><rect x="100" y="8" width="44" height="18" rx="2" fill="#fdf4ef" stroke="#c2410c"/><rect x="148" y="8" width="44" height="18" rx="2"/><rect x="460" y="8" width="56" height="18" rx="2"/>
-    <rect x="52" y="36" width="44" height="18" rx="2"/><rect x="100" y="36" width="44" height="18" rx="2"/><rect x="148" y="36" width="44" height="18" rx="2"/><rect x="460" y="36" width="56" height="18" rx="2"/>
-    <rect x="52" y="70" width="44" height="18" rx="2"/><rect x="100" y="70" width="44" height="18" rx="2"/><rect x="148" y="70" width="44" height="18" rx="2"/><rect x="460" y="70" width="56" height="18" rx="2"/>
-  </g>
-  <g font-size="8" text-anchor="middle">
-    <text x="74" y="20">Slot 1</text><text x="122" y="20">Slot 2</text><text x="170" y="20">Slot 3</text><text x="488" y="20">Slot 64</text>
-    <text x="74" y="48">Slot 1</text><text x="122" y="48">Slot 2</text><text x="170" y="48">Slot 3</text><text x="488" y="48">Slot 64</text>
-    <text x="74" y="82">Slot 1</text><text x="122" y="82">Slot 2</text><text x="170" y="82">Slot 3</text><text x="488" y="82">Slot 64</text>
-    <text x="325" y="20" fill="#5a5f69">&#8230;</text><text x="325" y="48" fill="#5a5f69">&#8230;</text><text x="325" y="82" fill="#5a5f69">&#8230;</text>
-  </g>
+  <g stroke="#1b1d21" fill="none"><path d="M122,25 L166,25" marker-end="url(#b)"/><path d="M318,25 L362,25" marker-end="url(#b)"/><path d="M439,42 L439,56" marker-end="url(#b)"/><path d="M364,75 L320,75" marker-end="url(#b)"/></g>
 </svg>
-<div class="cap">Bank 1 / Slot 2 is selected: it plays, and the next recording goes into it.</div>
+<div class="cap">A recording keeps its number for good, so each project keeps its own sounds.</div>
 </div>
 <table class="compact">
   <tr><th style="width:36mm">Situation</th><th>Behaviour</th></tr>
-  <tr><td>Playing</td><td>One sound at a time per KeySampler: the current Bank + Slot. Changing Bank or Slot switches immediately and stops notes that are still sounding.</td></tr>
-  <tr><td>Recording</td><td>Always into the current Bank + Slot, replacing what was there. Other slots and banks are never touched.</td></tr>
-  <tr><td>Slots 61&ndash;64</td><td>Built-in oscillators in every bank: <b>61 Sine</b>, <b>62 Triangle</b>, <b>63 Square</b>, <b>64 Sawtooth</b>. They cannot be recorded over (Record is ignored on these slots).</td></tr>
-  <tr><td>Empty slot</td><td>Plays the matching WAV from the plugin's <code>samples</code> folder (slot N = Nth file by name), otherwise silence. Slot 1 holds the test tone <code>00test.wav</code> in every bank until you record over it.</td></tr>
-  <tr><td>Storage</td><td>On the DSP Card's internal storage. Recordings survive power-off, Sync Files and plugin updates. They are not on the SD card, so they are not part of an SD-card backup and do not move with a project to another S2400.</td></tr>
+  <tr><td>New recording</td><td>Gets one more than the highest number ever given out, even if that recording was deleted, so an old project never finds someone else's sound under its number. After 9999, deleted numbers are reused, lowest first. Existing sounds are never overwritten.</td></tr>
+  <tr><td>Choosing a sound</td><td>Set <b>Sound</b> to a number to play that recording, and leave it there to use it in this project (the project then saves the number). One sound at a time per KeySampler; switching stops notes still sounding.</td></tr>
+  <tr><td>Unused number</td><td>Silence.</td></tr>
+  <tr><td>Storage</td><td>On the DSP Card's internal storage. Recordings survive power-off, Sync Files and plugin updates. They are not on the SD card, so they do not move with a project to another S2400.</td></tr>
 </table>
-<h3>Oscillator slots</h3>
-<p>Slots 61&ndash;64 make KeySampler a simple synth. Root Note plays middle C (261.63 Hz); the waveforms are band-limited per octave, so high notes stay clean. They sustain while a key is held and stop on release whatever the Mode; Start and loop points don't apply. Everything else (envelopes, filter, vibrato, glide, CC control) works as usual.</p>
-<h3>One bank per project</h3>
-<p>Bank and Slot are parameters, and the S2400 saves parameters with each project, so loading a project switches KeySampler back to that project's bank. Give each project its own Bank number (project 1 = Bank 1, project 2 = Bank 2 &hellip;). New projects start on Bank 1: set a free bank before recording. Two projects on the same bank share their sounds, which is handy for a common kit.</p>
-<div class="note"><b>Why not automatic?</b> The S2400 saves only parameter values in a project and never tells the DSP Card the project name, so a parameter (Bank) is the reliable way to keep projects apart.</div>
+<div class="note"><b>After recording,</b> re-open KeySampler's page: Sound should read <b>Sample</b>. Then save the project. If it still shows the old value, the S2400 did not receive it (this happens only with two KeySamplers whose settings are all identical): change any setting on one of them and record again.</div>
+<h3>Oscillators</h3>
+<p>The oscillators make KeySampler a simple synth. Root Note plays middle C (261.63 Hz); the waveforms are band-limited per octave, so high notes stay clean. They sustain while a key is held and stop on release whatever the Mode; Start and loop points don't apply. Everything else (envelopes, filter, vibrato, glide, CC control) works as usual. Recording works on any Sound setting and switches to the new recording (Sound = Sample).</p>
+<h3>Deleting recordings</h3>
+<p>The DSP Card has no file browser, so KeySampler deletes its own recordings:</p>
+<ol class="steps">
+  <li>Scroll <b>Sound</b> past Sine &hellip; Saw and Sample to the <b>number</b> of the recording you want to remove, and play it to be sure.</li>
+  <li>In <b>Changes</b>, select <b>Delete</b>.</li>
+</ol>
+<p>The recording is removed from the card at once, Sound goes back to <b>Sample</b>, and Changes goes back to <b>---</b>. Because picking the number also made it the Sample, Sample returns to the one it played before you picked it. Projects that used the deleted number play silence. There is no confirmation, but Delete only works on a sound picked by number: with Sound on <b>Sample</b> or on a waveform it does nothing, so the recording a project is using can't be deleted by accident. WAVs added with Sync Files are left alone (remove those from the SD card and sync).</p>
+<h3>Recordings from earlier versions</h3>
+<p>Versions up to 0.18 stored recordings by Bank and Slot. The first time 0.20 starts, it renames them: <b>Bank <i>b</i>, Slot <i>s</i> becomes Sample <i>b</i>&times;100 + <i>s</i></b> (Bank 1 Slot 3 &rarr; 103, Bank 12 Slot 5 &rarr; 1205). Recordings made with 0.19 keep their numbers. Open each older project, set Sound to the new number and save it again.</p>
+<p><b>From 0.20&ndash;0.31 to 0.32:</b> those versions named files after the internal Sample value, so the first recording was <code>sample_0004.wav</code> and showed as &ldquo;4&rdquo;. The first time 0.32 starts it renames every recording to the number the menu now shows (<code>sample_0004.wav</code> &rarr; <code>sample_0001.wav</code>, <code>sample_0027.wav</code> &rarr; <code>sample_0024.wav</code>) and leaves a file <code>numbered_from_1</code> so it only does this once. Projects keep playing the same sound; only the label changes (&ldquo;27&rdquo; now reads &ldquo;24&rdquo;). The Sample range grew by three, so in a project saved with a recording above about 1660 the value may come back one or two numbers off: check it and save again.</p>
+<p><b>From 0.32 and earlier to 0.33:</b> the Sound list gained the <b>Sample</b> entry, so a project saved with a recording number now shows the next lower one (a project on &ldquo;24&rdquo; plays recording 23). Open it, set Sound to the right number (or record again) and save. File names do not change.</p>
 <h3>Adding WAV files with a computer</h3>
-<p>Copy WAVs into <code>SD:/dspcard/lv2/keysampler.lv2/samples/</code> and run <b>Sync Files</b>. Files are numbered alphabetically, so start names with numbers (<code>01PIANO.wav</code>, <code>02BASS.wav</code>). Supported: 8/16/24/32-bit PCM and 32/64-bit float, mono or stereo, any sample rate. Loop points stored in the WAV (smpl chunk) are used in Loop mode. The S2400's file browser does not show the <code>dspcard</code> folder, so this needs a computer. Several KeySamplers on different buses have independent Bank and Slot settings.</p>
-
+<p>Name a WAV <code>sample_NNNN.wav</code> (four digits, e.g. <code>sample_9000.wav</code>), copy it into <code>SD:/dspcard/plugins/lv2/keysampler.lv2/samples/</code> and run <b>Sync Files</b>; Sound 9000 then plays it. A recording with the same number takes priority, so use numbers your recordings won't reach (e.g. 9000 and up). Supported: 8/16/24/32-bit PCM and 32/64-bit float, mono or stereo, any sample rate; loop points stored in the WAV (smpl chunk) are used in Loop mode.</p>
 </section>
 
 <!-- ============================================================ 6 PLAYING -->
@@ -281,9 +293,9 @@
   <tr><td>Bend Range</td><td>Pitch-bend range in semitones (0&ndash;24, default 2). Not in the S2400 menu.</td></tr>
   <tr><td>Vel Sens</td><td>Not in the S2400 menu (default 1 = full velocity response). 0 = all notes at full volume. Gain = (1 &minus; s) + s &times; (velocity/127)&sup2;.</td></tr>
   <tr><td>Voices</td><td>Polyphony limit, 1&ndash;16. Set 1 for mono lines. When all voices are busy, releasing voices are reused first, then the oldest. Replaying a held note retriggers it.</td></tr>
-  <tr><td>Mode</td><td><b>One Shot</b> plays to the end and ignores note-off (drums). <b>Gate</b> fades out with Release when the key is let go. <b>Loop</b> repeats the loop section while the key is held, then fades out.</td></tr>
+  <tr><td>Mode</td><td><b>One Shot</b> plays to the end and ignores note-off (drums). <b>Gate</b> fades out with Release when the key is let go. <b>Loop</b> repeats the loop section while the key is held, then fades out. <b>Ping-Pong</b> does the same but plays the loop section forwards and backwards in turn, so the loop never jumps.</td></tr>
 </table>
-<p>The sustain pedal (CC64) holds notes in Gate and Loop modes.</p>
+<p>The sustain pedal (CC64) holds notes in Gate, Loop and Ping-Pong modes.</p>
 <h3>Glide: portamento and legato</h3>
 <table>
   <tr><th style="width:30mm">Glide Mode</th><th>Behaviour</th></tr>
@@ -293,7 +305,7 @@
 </table>
 <p><b>Glide ms</b> (0&ndash;2000, default 100) is the time a slide takes, whatever the interval. In Legato, 0 gives instant pitch changes without retriggering, the classic "hammer-on" feel.</p>
 <h3>Envelope</h3>
-<p><b>Attack ms</b> (0&ndash;2000), <b>Decay ms</b> (0&ndash;5000), <b>Sustain</b> (level 0&ndash;1) and <b>Release ms</b> (0&ndash;5000) shape each note's volume. Attack and decay are linear ramps; release fades from the current level. With Sustain 0 in Gate or Loop mode, a note ends after its decay.</p>
+<p><b>Attack ms</b> (0&ndash;2000), <b>Decay ms</b> (0&ndash;5000), <b>Sustain</b> (level 0&ndash;1) and <b>Release ms</b> (0&ndash;5000) shape each note's volume. Attack and decay are linear ramps; release fades from the current level. With Sustain 0 in Gate, Loop or Ping-Pong mode, a note ends after its decay.</p>
 <h3>Start and loop points</h3>
 <p>Each point uses two whole-number parameters, <b>sec</b> and <b>ms</b>, matching the S2400's waveform editor, which shows points as minutes:seconds.milliseconds+samples (S2400 manual p. 30). The sample-accurate "smp" parts exist but sit beyond the S2400's 32-parameter menu, so in the menu points move in 1 ms steps.</p>
 <table>
@@ -303,7 +315,7 @@
 </table>
 <ul>
   <li><b>Start</b> sets where every note begins.</li>
-  <li><b>Loop Start</b> and <b>Loop End</b> set the section repeated in Loop mode.</li>
+  <li><b>Loop Start</b> and <b>Loop End</b> set the section repeated in Loop and Ping-Pong mode.</li>
   <li>Loop End at 0:00.000+0 means <i>end of the sound</i>; so does any value past the end.</li>
   <li>With Loop Start and Loop End both at 0, a WAV's own loop points are used if it has any, otherwise the whole sound loops.</li>
   <li>Samples are counted at the sound's own sample rate (48 per ms for recordings).</li>
@@ -313,62 +325,59 @@
 
 <!-- ============================================================ 7 FILTER ETC -->
 <section class="chapter">
-<h2><span class="n">7</span>Filter, vibrato and pan</h2>
+<h2><span class="n">7</span>Filter, LFO and pan</h2>
 <p>These affect only KeySampler's notes, never the Thru signal.</p>
 <h3>Filter</h3>
-<table>
+<table class="tight">
   <tr><th style="width:30mm">Parameter</th><th>Description</th></tr>
-  <tr><td>Filter</td><td>Off, Low Pass, Band Pass (mid) or High Pass. A 12 dB/octave state-variable filter on each note.</td></tr>
+  <tr><td>Filter</td><td>Off, Low Pass, Band Pass (mid) or High Pass. A 4-pole transistor-ladder filter in the style of the Moog, on each note: 24 dB/octave, with saturation inside the feedback loop, so loud sounds and high resonance growl and distort. Band and High Pass are mixed from the ladder stages.</td></tr>
   <tr><td>Cutoff</td><td>0&ndash;100, spread musically: 0 = 20 Hz, 50 &asymp; 630 Hz, 100 = 20 kHz (frequency = 20 &times; 1000<sup>Cutoff/100</sup> Hz). Changes glide over about 10 ms, so sweeps are smooth.</td></tr>
-  <tr><td>Resonance</td><td>0&ndash;1 (Q from 0.7 to about 18). At 0.9 the cutoff frequency is boosted by about 14 dB.</td></tr>
+  <tr><td>Resonance</td><td>0&ndash;1. The cutoff frequency gets louder as you turn it up; from about <b>0.87</b> the filter <b>self-oscillates</b>: it whistles a sine at the cutoff frequency on top of the sound, which you can play by sweeping Cutoff. As on a Moog, high resonance thins the bass; KeySampler gives part of it back.</td></tr>
 </table>
 <h3>Filter envelope</h3>
 <p>The filter runs separately on every note, so each note can have its own sweep. A second envelope moves the cutoff: cutoff = <b>Cutoff</b> + envelope &times; <b>F.Env Amount</b>. <b>F.Env Amount 0 switches it off</b> (the default).</p>
-<table>
+<table class="tight">
   <tr><th style="width:34mm">Parameter</th><th>Description</th></tr>
   <tr><td>F.Env Amount</td><td>&minus;100 to +100, in Cutoff units; 0 = off. +60 with Cutoff 20 opens the filter to 80 at the envelope's peak; negative values close it instead.</td></tr>
   <tr><td>F.Env Attack / Decay ms</td><td>Time to reach the peak (0&ndash;2000 ms) and to fall to the sustain level (0&ndash;5000 ms).</td></tr>
   <tr><td>F.Env Sustain</td><td>Level held while the key is down, 0&ndash;1.</td></tr>
   <tr><td>F.Env Release ms</td><td>Time to fall to zero after release, 0&ndash;5000 ms.</td></tr>
 </table>
-<p>The filter envelope restarts with each new note, except legato notes, which keep the running sweep. It only acts when <b>Filter</b> is not Off. Typical pluck: Low Pass, Cutoff 20, Resonance 0.3, Amount +60, Attack 5, Decay 400, Sustain 0.</p>
-<h3>Vibrato</h3>
-<table>
+<p>The filter envelope restarts with each new note, except legato notes, which keep the running sweep. It only acts when <b>Filter</b> is not Off. Typical pluck: Low Pass, Cutoff 20, Resonance 0.3, Amount +60, Attack 5, Decay 400, Sustain 0. Acid bass: Saw (Sample 3), Low Pass, Cutoff 15, Resonance 0.8, Amount +50, Decay 200, Sustain 0, Glide on.</p>
+<h3>LFO: vibrato, filter wobble, tremolo</h3>
+<p>One LFO (a sine, running separately on every note) can move the <b>pitch</b>, the <b>filter cutoff</b> or the <b>volume</b>. Press <b>B4</b> to choose: Pitch &rarr; Filter &rarr; Volume &rarr; Pitch. KeySampler starts on Pitch.</p>
+<table class="tight">
   <tr><th style="width:30mm">Parameter</th><th>Description</th></tr>
-  <tr><td>Vib Rate Hz</td><td>Speed, 0.1&ndash;12 Hz (default 5). Not in the S2400 menu: set it with PCR knob R3 or CC Learn.</td></tr>
-  <tr><td>Vib Depth cents</td><td>Pitch swing, 0&ndash;100 cents either side (default 0 = off).</td></tr>
-  <tr><td>Vib Delay ms</td><td>Time after note-on before vibrato starts, 0&ndash;2000 ms. Vibrato then fades in over 200 ms. Not in the S2400 menu: PCR knob R5 or CC Learn.</td></tr>
+  <tr><td>LFO Rate Hz</td><td>Speed, 0.1&ndash;12 Hz (default 5). PCR knob R3.</td></tr>
+  <tr><td>LFO Depth</td><td>0&ndash;100 (default 0 = off). PCR knob R4. <b>Pitch:</b> up to &plusmn;100 cents. <b>Filter:</b> up to &plusmn;30 Cutoff units (&plusmn;3 octaves) around Cutoff; Filter must be on. <b>Volume:</b> 100 dips fully to silence, 50 to half.</td></tr>
+  <tr><td>LFO Delay ms</td><td>Time after note-on before the LFO starts, 0&ndash;2000 ms; it then fades in over 200 ms. Not in the S2400 menu: PCR knob R5.</td></tr>
+  <tr><td>LFO Dest</td><td>Pitch / Filter / Volume. Not in the S2400 menu: B4.</td></tr>
 </table>
 <h3>Pan and expression</h3>
-<p><b>Pan</b> (&minus;1 left to +1 right) is a balance control: the centre leaves both sides at full level. <b>It only works on a stereo bus pair</b>: in Bus Settings set <b>Mix</b> to stereo for the pair KeySampler is on (1&amp;2, 3&amp;4 &hellip;; DSP manual p. 9). On a mono bus there is only one channel to send the sound to. The expression pedal (CC11) scales KeySampler's output from 0 to full; it starts at full.</p>
+<p><b>Pan</b> (&minus;1 left to +1 right) is a balance control: the centre leaves both sides at full level. Listen on the main mix (Mix Out, headphones, USB main): every DSP bus, mono or stereo, reaches the main mix in stereo, but an individual output jack carries only the left channel of a mono bus. On a stereo pair (set <b>Mix</b> in Bus Settings, DSP manual p. 9) output jacks 1&amp;2 carry left and right. The expression pedal (CC11) scales KeySampler's output from 0 to full; it starts at full.</p>
 </section>
 
 <!-- ============================================================ 8 MIDI CONTROL -->
 <section class="chapter">
-<h2><span class="n">8</span>MIDI control and CC Learn</h2>
-<p>Many parameters can be controlled from MIDI controllers. The assignment table (the <i>CC map</i>) is stored on the DSP Card and applies to every project.</p>
-<h3>Save to Menu and Restore Menu</h3>
-<p>Moving a knob, slider or button changes <b>only the sound</b>. The S2400 menu keeps its values, and those menu values are what the project saves. Two PCR buttons decide what happens to your changes:</p>
+<h2><span class="n">8</span>MIDI control, Save and Restore</h2>
+<p>Many parameters can be controlled from MIDI controllers. The assignments follow the PCR-M30 GM2 set (chapter 9, appendix A) and are the same in every project.</p>
+<h3>Save and Restore</h3>
+<p>Moving a knob, slider or button changes <b>only the sound</b>. The S2400 menu keeps its values, and those menu values are what the project saves. You decide what happens to your changes, from the keyboard or from the menu:</p>
 <table class="compact">
-  <tr><th style="width:32mm">Button</th><th>What it does</th></tr>
-  <tr><td><b>B5 &middot; Save</b> (CC 126)</td><td>Writes every value changed from a controller into the S2400 menu. Save the project afterwards to keep them.</td></tr>
-  <tr><td><b>B6 &middot; Restore</b> (GM2 System On)</td><td>Forgets all controller changes; KeySampler plays the menu values again.</td></tr>
+  <tr><th style="width:52mm">Command</th><th>What it does</th></tr>
+  <tr><td><b>Save</b><br>L2 (CC 81), or menu <b>Changes</b> &rarr; Save</td><td>Writes every value changed from a controller into the S2400 menu. Save the project afterwards to keep them.</td></tr>
+  <tr><td><b>Restore</b><br>L3 (CC 82), or menu <b>Changes</b> &rarr; Restore</td><td>Forgets all controller changes: KeySampler goes back to the saved settings, i.e. the values in the menu. The sound (Sound, Sample ID) is not changed.</td></tr>
+  <tr><td><b>Delete</b><br>menu <b>Changes</b> &rarr; Delete</td><td>Deletes the recording picked by number in Sound (see chapter 5). Does nothing when Sound is Sample or a waveform.</td></tr>
+  <tr><td><b>Default</b><br>menu <b>Changes</b> &rarr; Default</td><td>Puts every other setting back to its factory default, in the menu too. The sound itself (Sound, Sample ID), Record and Changes are not changed. Save the project to keep it; reload the project to undo it.</td></tr>
 </table>
 <ul>
   <li>Changing a value in the menu also takes over that one parameter, so the last thing touched is what you hear.</li>
   <li>Save sends the values to the DSP Card's audio engine (sushi), exactly as the menu does. Start and loop points are sent as sec / ms / smp; a Loop End at maximum is sent as 0:00.000+0 (end of sound).</li>
   <li>The S2400 shows the saved values when you re-open the plugin page. Two KeySamplers with identical settings cannot be told apart, and Save does nothing for them.</li>
-  <li><b>Save to Menu</b> and <b>Restore Menu</b> are also CC Learn functions, so you can put them on any other button (useful if the S2400 does not pass B6's SysEx).</li>
-  <li>The hidden parameter <b>Auto Menu Sync</b> (off by default) brings back the old behaviour: every controller move is copied to the menu about 0.1 s after it stops.</li>
+  <li><b>Changes</b> (the last menu item) acts about a second after you select Save, Restore, Default or Delete, then goes back to <b style="white-space:nowrap">---</b> (shown when you re-open the page). The short wait means passing over an entry while browsing does nothing, but there is no confirmation. A value saved in a project is never acted on when it loads.</li>
+  <li>The hidden <b>Auto Menu Sync</b> (off) would copy every controller move to the menu instead.</li>
 </ul>
 
-<h3>CC Learn</h3>
-<ol class="steps">
-  <li>In KeySampler's parameters, set <b>CC Learn</b> (the last item in the menu) to the function you want to control.</li>
-  <li>Move the knob, slider or button. The first CC it sends is assigned to that function, and it controls it straight away. (Save to Menu and Restore Menu act on any message from their button, at most every 0.2 s.)</li>
-  <li>Set <b>CC Learn</b> back to <b>Off</b>. Repeat for other functions.</li>
-</ol>
-<p>Each function has one controller; learning a new one replaces the old assignment. Learnable: CC 0&ndash;119 except 6, 11, 38, 64, 65 and 98&ndash;101 (fixed jobs), plus channel aftertouch. <b>Reset Map</b> restores the default (PCR-M30 GM2) assignments.</p>
 <h3>How controller values are scaled</h3>
 <table class="tight">
   <tr><th style="width:44mm">Function</th><th>Controller 0 &rarr; 127</th></tr>
@@ -379,8 +388,8 @@
   <tr><td>Tune / Pan</td><td>&minus;12 &rarr; +12 semitones / left &rarr; right; centre (64) = 0 / middle</td></tr>
   <tr><td>Start / Loop Start / Loop End</td><td>Beginning &rarr; end of the sound</td></tr>
   <tr><td>Record / Thru / Filter Env</td><td>Off below 64, on from 64</td></tr>
-  <tr><td>Slot / Filter Type / Mode</td><td>1 &rarr; 64 / 4 zones / 3 zones, in menu order</td></tr>
-  <tr><td>Vib Rate / Depth / Delay</td><td>0.1 &rarr; 12 Hz (curved) / 0 &rarr; 100 cents / 0 &rarr; 2000 ms</td></tr>
+  <tr><td>Sample / Filter Type / Mode</td><td>Sine &hellip; Saw, 1 &rarr; 9999 / 4 zones / 4 zones, in menu order</td></tr>
+  <tr><td>LFO Rate / Depth / Delay</td><td>0.1 &rarr; 12 Hz (curved) / 0 &rarr; 100 / 0 &rarr; 2000 ms</td></tr>
   <tr><td>Glide Mode / Glide Time</td><td>3 zones (Off, Portamento, Legato) / 0 &rarr; 2000 ms, curved</td></tr>
   <tr><td>F.Env Amount / A / D / S / R</td><td>&minus;100 &rarr; +100 (centre 0) / 0 &rarr; 2000 ms / 0 &rarr; 5000 ms / 0 &rarr; 1 / 0 &rarr; 5000 ms</td></tr>
 </table>
@@ -389,95 +398,104 @@
 <!-- ============================================================ 9 PCR-M30 -->
 <section class="chapter">
 <h2><span class="n">9</span>Using the Edirol PCR-M30</h2>
-<p>KeySampler's default map follows the PCR-M30/M50/M80 <b>GM2 SET</b> (memory 0, the factory setting; PCR manual p. 98). Knobs keep the functions printed on the GM2 template; the sliders carry the envelope and sample points; the buttons switch features.</p>
+<p>KeySampler's map follows the PCR-M30/M50/M80 <b>GM2 SET</b> (memory 0, the factory setting; PCR manual p. 98), with L1&ndash;L3 changed to control changes (below). Knobs keep the functions printed on the GM2 template; the sliders carry the envelope and sample points; the buttons switch features.</p>
 <table class="tight">
   <thead><tr><th style="width:11mm">Ctrl</th><th style="width:44mm">GM2 template label</th><th style="width:34mm">Message sent</th><th>KeySampler function</th></tr></thead>
   <tr><td><b>R1</b></td><td>Filter Cutoff</td><td class="mono">CC 74</td><td>Cutoff</td></tr>
   <tr><td><b>R2</b></td><td>Filter Resonance</td><td class="mono">CC 71</td><td>Resonance</td></tr>
-  <tr><td><b>R3</b></td><td>Vibrato Rate</td><td class="mono">CC 76</td><td>Vibrato rate</td></tr>
-  <tr><td><b>R4</b></td><td>Vibrato Depth</td><td class="mono">CC 77</td><td>Vibrato depth</td></tr>
-  <tr><td><b>R5</b></td><td>Vibrato Delay</td><td class="mono">CC 78</td><td>Vibrato delay</td></tr>
+  <tr><td><b>R3</b></td><td>Vibrato Rate</td><td class="mono">CC 76</td><td>LFO rate</td></tr>
+  <tr><td><b>R4</b></td><td>Vibrato Depth</td><td class="mono">CC 77</td><td>LFO depth</td></tr>
+  <tr><td><b>R5</b></td><td>Vibrato Delay</td><td class="mono">CC 78</td><td>LFO delay</td></tr>
   <tr><td><b>R6</b></td><td>Coarse Tuning</td><td class="mono">RPN 0/2</td><td>Tune, coarse: semitones (64 = 0)</td></tr>
   <tr><td><b>R7</b></td><td>Fine Tuning</td><td class="mono">RPN 0/1</td><td>Tune, fine: &plusmn;100 cents</td></tr>
   <tr><td><b>R8</b></td><td>Pan</td><td class="mono">CC 10</td><td>Pan</td></tr>
-  <tr><td><b>S1</b></td><td>Portamento Time</td><td class="mono">CC 5</td><td>Start point</td></tr>
-  <tr><td><b>S2</b></td><td>Aftertouch</td><td class="mono">Channel pressure</td><td>Loop Start</td></tr>
-  <tr><td><b>S3</b></td><td>Envelope Attack</td><td class="mono">CC 73</td><td>Attack</td></tr>
-  <tr><td><b>S4</b></td><td>Envelope Decay</td><td class="mono">CC 75</td><td>Decay</td></tr>
-  <tr><td><b>S5</b></td><td>Envelope Release</td><td class="mono">CC 72</td><td>Release</td></tr>
-  <tr><td><b>S6</b></td><td>Chorus</td><td class="mono">CC 93</td><td>Sustain level</td></tr>
+  <tr><td><b>S1</b></td><td>Portamento Time</td><td class="mono">CC 5</td><td>Attack (volume or filter envelope, see B6)</td></tr>
+  <tr><td><b>S2</b></td><td>Aftertouch</td><td class="mono">Channel pressure</td><td>Decay (volume or filter envelope)</td></tr>
+  <tr><td><b>S3</b></td><td>Envelope Attack</td><td class="mono">CC 73</td><td>Sustain (volume or filter envelope)</td></tr>
+  <tr><td><b>S4</b></td><td>Envelope Decay</td><td class="mono">CC 75</td><td>Release (volume or filter envelope)</td></tr>
+  <tr><td><b>S5</b></td><td>Envelope Release</td><td class="mono">CC 72</td><td>Start point</td></tr>
+  <tr><td><b>S6</b></td><td>Chorus</td><td class="mono">CC 93</td><td>Loop Start</td></tr>
   <tr><td><b>S7</b></td><td>Reverb</td><td class="mono">CC 91</td><td>Loop End</td></tr>
   <tr><td><b>S8</b></td><td>Volume</td><td class="mono">CC 7</td><td>Level</td></tr>
-  <tr><td><b>B1</b></td><td>Program Change Dec</td><td class="mono">Program change &minus;</td><td><b>Record</b> on / off</td></tr>
-  <tr><td><b>B2</b></td><td>Program Change Inc</td><td class="mono">Program change +</td><td>Filter: Off &rarr; Low Pass &rarr; Band Pass &rarr; High Pass &rarr; Off</td></tr>
-  <tr><td><b>B3</b></td><td>Portamento On/Off</td><td class="mono">CC 65 (0/127)</td><td>Mode: One Shot &rarr; Gate &rarr; Loop &rarr; One Shot</td></tr>
-  <tr><td><b>B4</b></td><td>Poly Mode On</td><td class="mono">CC 127</td><td>Glide on / off (back to the last Glide Mode used, Portamento by default)</td></tr>
-  <tr><td><b>B5</b></td><td>Mono Mode On</td><td class="mono">CC 126</td><td><b>Save</b>: controller changes &rarr; menu</td></tr>
-  <tr><td><b>B6</b></td><td>GM2 System On</td><td class="mono">SysEx F0 7E 7F 09 03 F7</td><td><b>Restore</b>: play the menu values again</td></tr>
+  <tr><td><b>B1</b></td><td>Program Change Dec</td><td class="mono">Program change &minus;</td><td>Filter: Off &rarr; Low Pass &rarr; Band Pass &rarr; High Pass &rarr; Off</td></tr>
+  <tr><td><b>B2</b></td><td>Program Change Inc</td><td class="mono">Program change +</td><td>Mode: One Shot &rarr; Gate &rarr; Loop &rarr; Ping-Pong &rarr; One Shot</td></tr>
+  <tr><td><b>B3</b></td><td>Portamento On/Off</td><td class="mono">CC 65 (0/127)</td><td>Glide on / off (back to the last Glide Mode used, Portamento by default)</td></tr>
+  <tr><td><b>B4</b></td><td>Poly Mode On</td><td class="mono">CC 127</td><td>LFO goes to: Pitch &rarr; Filter &rarr; Volume &rarr; Pitch</td></tr>
+  <tr><td><b>B6</b></td><td>GM2 System On</td><td class="mono">SysEx F0 7E 7F 09 03 F7</td><td>Sliders S1&ndash;S4: <b>volume envelope &harr; filter envelope</b></td></tr>
+  <tr><td><b>L1</b></td><td>Stop &rarr; <i>set to CC 80</i></td><td class="mono">CC 80 (latch)</td><td><b>Record</b> on / off</td></tr>
+  <tr><td><b>L2</b></td><td>Start &rarr; <i>set to CC 81</i></td><td class="mono">CC 81 (latch)</td><td><b>Save</b>: controller changes &rarr; menu</td></tr>
+  <tr><td><b>L3</b></td><td>Continue &rarr; <i>set to CC 82</i></td><td class="mono">CC 82 (latch)</td><td><b>Restore</b>: back to the saved (menu) settings</td></tr>
   <tr><td><b>P1</b></td><td>Hold</td><td class="mono">CC 64</td><td>Sustain pedal</td></tr>
   <tr><td><b>P2</b></td><td>Expression</td><td class="mono">CC 11</td><td>Expression (output volume)</td></tr>
-  <tr><td class="x">L1&ndash;L3</td><td class="x">Stop / Start / Continue</td><td class="mono x">Real-time, port 2</td><td class="x">Not used</td></tr>
-  <tr><td class="x">Lever</td><td class="x">Pitch bend / modulation</td><td class="mono x">Pitch bend / CC 1</td><td>Pitch bend (Bend Range). Modulation is free for CC Learn.</td></tr>
+  <tr><td class="x">Lever</td><td class="x">Pitch bend / modulation</td><td class="mono x">Pitch bend / CC 1</td><td>Pitch bend (Bend Range). Modulation is not used.</td></tr>
 </table>
 <ul>
   <li><b>B1 and B2</b> both send program changes; KeySampler tells them apart by direction (lower number = B1, higher = B2). When the PCR is already at 0 or 127 a repeated number still counts: 0 = B1, anything else = B2.</li>
-  <li>B1&ndash;B4 start from the current setting, including one chosen in the menu. Like knobs, they change the sound only until you press B5 (Save).</li>
-  <li>Slot and Thru have no button: choose Slot in the menu, or CC Learn either one onto a spare controller (e.g. the modulation lever).</li>
+  <li><b>B6</b> switches what S1&ndash;S4 control. KeySampler starts on the volume envelope. On the filter envelope you hear the sliders only when a Filter type is on and <b>F.Env Amount</b> is not 0.</li>
+  <li>Buttons start from the current setting, including one chosen in the menu. Like knobs, they change the sound only until you press L2 (Save).</li>
   <li>R6 and R7 combine: tune = coarse semitones + fine cents. Changing <b>Tune</b> in the menu takes over again.</li>
-  <li>Glide time is in the menu (<b>Glide ms</b>); to put it on a slider, CC Learn <b>Glide Time</b> onto S1 (this replaces Start).</li>
 </ul>
-<div class="note"><b>Check on your S2400.</b> Notes are known to reach the DSP bus. Whether the S2400 also forwards aftertouch (S2), program change (B1/B2), RPN (R6/R7) and SysEx (B6) has not been confirmed. If one of these controls does nothing, use CC Learn to move its function to a knob or slider that works, or use the menu.</div>
+<h3>Setting L1&ndash;L3 on the PCR (once)</h3>
+<p>In the GM2 set, L1&ndash;L3 send Stop / Start / Continue. Those are transport messages: the S2400 would start and stop its own sequencer, and they do not reach a plugin as button presses. Set them to control changes and save the result as a user memory (PCR manual p. 63, 59, 84):</p>
+<ol class="steps">
+  <li>Select memory <b>0</b> (GM2). Press <span class="keys">EDIT</span>, press <b>L1</b>, then <span class="keys">ENTER</span>.</li>
+  <li>Press the <b>CONTROL CHANGE</b> key, <span class="keys">ENTER</span>. Enter the MIDI channel of KeySampler's bus (chapter 3), <span class="keys">ENTER</span>. Enter <b>80</b>, <span class="keys">ENTER</span>. Press <b>0</b> (Latch mode), <span class="keys">ENTER</span>.</li>
+  <li>Repeat for <b>L2</b> with <b>81</b> and <b>L3</b> with <b>82</b>.</li>
+  <li>Press <span class="keys">EDIT</span>, the <b>SAVE</b> key, <span class="keys">ENTER</span>, choose memory <b>1</b>, <span class="keys">ENTER</span>. Use memory 1 from now on; everything else is the same as the GM2 set.</li>
+</ol>
+<div class="note"><b>Check on your S2400.</b> Whether it forwards aftertouch (S2), program change (B1/B2), RPN (R6/R7) and SysEx (B6) to the DSP bus is not confirmed. If a control does nothing, use the menu.</div>
 </section>
 
 <!-- ============================================================ 10 PARAMETER REFERENCE -->
 <section class="chapter">
 <h2><span class="n">10</span>Parameter reference</h2>
-<p>All parameters in menu order. The S2400 shows the first 32 (ports 5&ndash;36). "Port" is the LV2 port index; "Default PCR" is the PCR-M30 control mapped by default. Ports 0&ndash;4 are MIDI in, audio out L/R and audio in L/R.</p>
+<p>All parameters in menu order; the S2400 shows the first 32 (ports 5&ndash;36). Ports 0&ndash;4 are MIDI in and audio out/in L/R.</p>
 <table class="tight">
   <thead><tr><th class="c" style="width:9mm">Port</th><th style="width:31mm">Name</th><th style="width:28mm">Range</th><th style="width:17mm">Default</th><th style="width:15mm">Default PCR</th><th>Notes</th></tr></thead>
-  <tr><td class="c">5</td><td>Slot</td><td>1 &ndash; 64</td><td>1</td><td></td><td>61&ndash;64 = oscillators</td></tr>
-  <tr><td class="c">6</td><td>Bank</td><td>1 &ndash; 99</td><td>1</td><td></td><td>One per project</td></tr>
-  <tr><td class="c">7</td><td>Record</td><td>Off / On</td><td>Off</td><td>B1</td><td>Arms recording</td></tr>
-  <tr><td class="c">8</td><td>Rec Threshold dB</td><td>&minus;80 &ndash; &minus;6</td><td>&minus;50</td><td></td><td>Level that starts a recording</td></tr>
-  <tr><td class="c">9</td><td>Mode</td><td>1-Shot / Gate / Loop</td><td>Gate</td><td>B3</td><td></td></tr>
-  <tr><td class="c">10</td><td>Level</td><td>0 &ndash; 2</td><td>1</td><td>S8</td><td></td></tr>
-  <tr><td class="c">11</td><td>Root Note</td><td>0 &ndash; 127</td><td>60</td><td></td><td>Note at original pitch</td></tr>
-  <tr><td class="c">12</td><td>Tune</td><td>&minus;24 &ndash; 24</td><td>0</td><td>R6/R7</td><td>Fractions allowed</td></tr>
-  <tr><td class="c">13</td><td>Attack ms</td><td>0 &ndash; 2000</td><td>1</td><td>S3</td><td></td></tr>
-  <tr><td class="c">14</td><td>Decay ms</td><td>0 &ndash; 5000</td><td>200</td><td>S4</td><td></td></tr>
-  <tr><td class="c">15</td><td>Sustain</td><td>0 &ndash; 1</td><td>1</td><td>S6</td><td></td></tr>
-  <tr><td class="c">16</td><td>Release ms</td><td>0 &ndash; 5000</td><td>150</td><td>S5</td><td></td></tr>
-  <tr><td class="c">17</td><td>Start sec</td><td>0 &ndash; 59</td><td>0</td><td>S1</td><td></td></tr>
-  <tr><td class="c">18</td><td>Start ms</td><td>0 &ndash; 999</td><td>0</td><td>S1</td><td></td></tr>
-  <tr><td class="c">19</td><td>Loop Start sec</td><td>0 &ndash; 59</td><td>0</td><td>S2</td><td></td></tr>
-  <tr><td class="c">20</td><td>Loop Start ms</td><td>0 &ndash; 999</td><td>0</td><td>S2</td><td></td></tr>
-  <tr><td class="c">21</td><td>Loop End sec</td><td>0 &ndash; 59</td><td>0</td><td>S7</td><td>0 = end of sound</td></tr>
-  <tr><td class="c">22</td><td>Loop End ms</td><td>0 &ndash; 999</td><td>0</td><td>S7</td><td></td></tr>
-  <tr><td class="c">23</td><td>Filter</td><td>Off / LP / BP / HP</td><td>Off</td><td>B2</td><td>12 dB/oct, per note</td></tr>
-  <tr><td class="c">24</td><td>Cutoff</td><td>0 &ndash; 100</td><td>100</td><td>R1</td><td>20 Hz &ndash; 20 kHz</td></tr>
-  <tr><td class="c">25</td><td>Resonance</td><td>0 &ndash; 1</td><td>0</td><td>R2</td><td></td></tr>
-  <tr><td class="c">26</td><td>F.Env Amount</td><td>&minus;100 &ndash; 100</td><td>0</td><td></td><td>0 = off</td></tr>
-  <tr><td class="c">27</td><td>F.Env Attack ms</td><td>0 &ndash; 2000</td><td>5</td><td></td><td></td></tr>
-  <tr><td class="c">28</td><td>F.Env Decay ms</td><td>0 &ndash; 5000</td><td>300</td><td></td><td></td></tr>
-  <tr><td class="c">29</td><td>F.Env Sustain</td><td>0 &ndash; 1</td><td>0.2</td><td></td><td></td></tr>
-  <tr><td class="c">30</td><td>F.Env Release ms</td><td>0 &ndash; 5000</td><td>300</td><td></td><td></td></tr>
-  <tr><td class="c">31</td><td>Glide Mode</td><td>Off / Porta / Legato</td><td>Off</td><td>B4</td><td>Legato = mono</td></tr>
-  <tr><td class="c">32</td><td>Glide ms</td><td>0 &ndash; 2000</td><td>100</td><td></td><td>Slide time</td></tr>
-  <tr><td class="c">33</td><td>Vib Depth cents</td><td>0 &ndash; 100</td><td>0</td><td>R4</td><td>0 = vibrato off</td></tr>
+  <tr><td class="c">5</td><td>Sound</td><td>Sine, Triangle, Square, Saw, Sample, 1 &ndash; 9999</td><td>Sine</td><td></td><td>Sample = own recording (Sample ID); internal 0&ndash;10003, number N = N + 4</td></tr>
+  <tr><td class="c">6</td><td>Record</td><td>tick box</td><td>off</td><td>L1</td><td>Ticked arms recording</td></tr>
+  <tr><td class="c">7</td><td>Rec Threshold dB</td><td>&minus;80 &ndash; &minus;6</td><td>&minus;50</td><td></td><td>Level that starts a recording</td></tr>
+  <tr><td class="c">8</td><td>Mode</td><td>1-Shot/Gate/Loop/P-P</td><td>Gate</td><td>B2</td><td></td></tr>
+  <tr><td class="c">9</td><td>Level</td><td>0 &ndash; 2</td><td>1</td><td>S8</td><td></td></tr>
+  <tr><td class="c">10</td><td>Root Note</td><td>0 &ndash; 127</td><td>60</td><td></td><td>Note at original pitch</td></tr>
+  <tr><td class="c">11</td><td>Tune</td><td>&minus;24 &ndash; 24</td><td>0</td><td>R6/R7</td><td>Fractions allowed</td></tr>
+  <tr><td class="c">12</td><td>Attack ms</td><td>0 &ndash; 2000</td><td>1</td><td>S1</td><td></td></tr>
+  <tr><td class="c">13</td><td>Decay ms</td><td>0 &ndash; 5000</td><td>200</td><td>S2</td><td></td></tr>
+  <tr><td class="c">14</td><td>Sustain</td><td>0 &ndash; 1</td><td>1</td><td>S3</td><td></td></tr>
+  <tr><td class="c">15</td><td>Release ms</td><td>0 &ndash; 5000</td><td>150</td><td>S4</td><td></td></tr>
+  <tr><td class="c">16</td><td>Start sec</td><td>0 &ndash; 59</td><td>0</td><td>S5</td><td></td></tr>
+  <tr><td class="c">17</td><td>Start ms</td><td>0 &ndash; 999</td><td>0</td><td>S5</td><td></td></tr>
+  <tr><td class="c">18</td><td>Loop Start sec</td><td>0 &ndash; 59</td><td>0</td><td>S6</td><td></td></tr>
+  <tr><td class="c">19</td><td>Loop Start ms</td><td>0 &ndash; 999</td><td>0</td><td>S6</td><td></td></tr>
+  <tr><td class="c">20</td><td>Loop End sec</td><td>0 &ndash; 59</td><td>0</td><td>S7</td><td>0 = end of sound</td></tr>
+  <tr><td class="c">21</td><td>Loop End ms</td><td>0 &ndash; 999</td><td>0</td><td>S7</td><td></td></tr>
+  <tr><td class="c">22</td><td>Filter</td><td>Off / LP / BP / HP</td><td>Off</td><td>B1</td><td>Ladder, 24 dB/oct, per note</td></tr>
+  <tr><td class="c">23</td><td>Cutoff</td><td>0 &ndash; 100</td><td>100</td><td>R1</td><td>20 Hz &ndash; 20 kHz</td></tr>
+  <tr><td class="c">24</td><td>Resonance</td><td>0 &ndash; 1</td><td>0</td><td>R2</td><td>Self-oscillates from ~0.87</td></tr>
+  <tr><td class="c">25</td><td>F.Env Amount</td><td>&minus;100 &ndash; 100</td><td>0</td><td></td><td>0 = off</td></tr>
+  <tr><td class="c">26</td><td>F.Env Attack ms</td><td>0 &ndash; 2000</td><td>5</td><td>S1*</td><td></td></tr>
+  <tr><td class="c">27</td><td>F.Env Decay ms</td><td>0 &ndash; 5000</td><td>300</td><td>S2*</td><td></td></tr>
+  <tr><td class="c">28</td><td>F.Env Sustain</td><td>0 &ndash; 1</td><td>0.2</td><td>S3*</td><td></td></tr>
+  <tr><td class="c">29</td><td>F.Env Release ms</td><td>0 &ndash; 5000</td><td>300</td><td>S4*</td><td></td></tr>
+  <tr><td class="c">30</td><td>Glide Mode</td><td>Off / Porta / Legato</td><td>Off</td><td>B3</td><td>Legato = mono</td></tr>
+  <tr><td class="c">31</td><td>Glide ms</td><td>0 &ndash; 2000</td><td>100</td><td></td><td>Slide time</td></tr>
+  <tr><td class="c">32</td><td>LFO Depth</td><td>0 &ndash; 100</td><td>0</td><td>R4</td><td>0 = LFO off</td></tr>
+  <tr><td class="c">33</td><td>LFO Rate Hz</td><td>0.1 &ndash; 12</td><td>5</td><td>R3</td><td></td></tr>
   <tr><td class="c">34</td><td>Pan</td><td>&minus;1 &ndash; 1</td><td>0</td><td>R8</td><td>Balance</td></tr>
   <tr><td class="c">35</td><td>Voices</td><td>1 &ndash; 16</td><td>16</td><td></td><td>Polyphony</td></tr>
-  <tr><td class="c">36</td><td>CC Learn</td><td>Off &hellip; Reset Map</td><td>Off</td><td></td><td>See appendix A.7</td></tr>
+  <tr><td class="c">36</td><td>Changes</td><td>---/Save/Restore/Default/Delete</td><td>---</td><td>L2/L3</td><td>Acts, then back to ---</td></tr>
   <tr class="grp"><td colspan="6">Not shown in the S2400 menu (beyond its 32 parameters): defaults, reachable from MIDI controllers</td></tr>
   <tr><td class="c">37</td><td>Thru</td><td>Off / On</td><td>On</td><td></td><td>Pass bus input to output</td></tr>
-  <tr><td class="c">38</td><td>Vib Rate Hz</td><td>0.1 &ndash; 12</td><td>5</td><td>R3</td><td></td></tr>
-  <tr><td class="c">39</td><td>Vel Sens</td><td>0 &ndash; 1</td><td>1</td><td></td><td>Velocity response</td></tr>
-  <tr><td class="c">40</td><td>Bend Range</td><td>0 &ndash; 24</td><td>2</td><td>Lever</td><td>Semitones</td></tr>
-  <tr><td class="c">41</td><td>Vib Delay ms</td><td>0 &ndash; 2000</td><td>0</td><td>R5</td><td>Then 200 ms fade-in</td></tr>
-  <tr><td class="c">42</td><td>Start smp</td><td>0 &ndash; 95</td><td>0</td><td></td><td>Fine-tune in samples</td></tr>
-  <tr><td class="c">43</td><td>Loop Start smp</td><td>0 &ndash; 95</td><td>0</td><td></td><td></td></tr>
-  <tr><td class="c">44</td><td>Loop End smp</td><td>0 &ndash; 95</td><td>0</td><td></td><td></td></tr>
-  <tr><td class="c">45</td><td>Filter Env</td><td>Off / On</td><td>On</td><td></td><td>Master switch for the filter envelope</td></tr>
-  <tr><td class="c">46</td><td>Auto Menu Sync</td><td>Off / On</td><td>Off</td><td></td><td>Copy every controller move into the menu (B5 Save works either way)</td></tr>
+  <tr><td class="c">38</td><td>Vel Sens</td><td>0 &ndash; 1</td><td>1</td><td></td><td>Velocity response</td></tr>
+  <tr><td class="c">39</td><td>Bend Range</td><td>0 &ndash; 24</td><td>2</td><td>Lever</td><td>Semitones</td></tr>
+  <tr><td class="c">40</td><td>LFO Delay ms</td><td>0 &ndash; 2000</td><td>0</td><td>R5</td><td>Then 200 ms fade-in</td></tr>
+  <tr><td class="c">41</td><td>Start smp</td><td>0 &ndash; 95</td><td>0</td><td></td><td>Fine-tune in samples</td></tr>
+  <tr><td class="c">42</td><td>Loop Start smp</td><td>0 &ndash; 95</td><td>0</td><td></td><td></td></tr>
+  <tr><td class="c">43</td><td>Loop End smp</td><td>0 &ndash; 95</td><td>0</td><td></td><td></td></tr>
+  <tr><td class="c">44</td><td>Filter Env</td><td>Off / On</td><td>On</td><td></td><td>Master switch for the filter envelope</td></tr>
+  <tr><td class="c">45</td><td>Auto Menu Sync</td><td>Off / On</td><td>Off</td><td></td><td>Copy every move to the menu</td></tr>
+  <tr><td class="c">46</td><td>LFO Dest</td><td>Pitch/Filter/Vol</td><td>Pitch</td><td>B4</td><td>What the LFO moves</td></tr>
+  <tr><td class="c">47</td><td>Sample ID</td><td>0 &ndash; 9999</td><td>0</td><td></td><td>Recording that Sound = Sample plays; set by Record</td></tr>
 </table>
 </section>
 
@@ -486,25 +504,25 @@
 <h2><span class="n">11</span>Troubleshooting and limitations</h2>
 <table>
   <tr><th style="width:52mm">Problem</th><th>What to check</th></tr>
-  <tr><td>KeySampler is not in the plugin list</td><td>Run Sync Files, then power-cycle the S2400. Check the folder is <code>dspcard/lv2/keysampler.lv2/</code> with the files directly inside, no extra sub-folder, no zip. Remove <code>.DS_Store</code> files. Look under the vendor <b>KeySampler</b> or <b>All vendors</b>.</td></tr>
+  <tr><td>KeySampler is not in the plugin list</td><td>Run Sync Files, then power-cycle the S2400. Check the folder is <code>dspcard/plugins/lv2/keysampler.lv2/</code> with the files directly inside, no extra sub-folder, no zip. Remove <code>.DS_Store</code> files. Look under the vendor <b>KeySampler</b> or <b>All vendors</b>.</td></tr>
   <tr><td>The pad is not heard through the bus</td><td>The track's <b>Output</b> must match KeySampler's bus number; <b>Thru</b> must be on.</td></tr>
-  <tr><td>The keyboard plays nothing</td><td>Set <b>Slot</b> to 1: the test tone should sound. If it does not, the notes are not reaching this bus: use bus 1, or try the MIDI channel matching the bus number.</td></tr>
-  <tr><td>Record does nothing</td><td>Slots 61&ndash;64 are oscillators and cannot be recorded over. Choose a slot from 1 to 60.</td></tr>
-  <tr><td>Recorded but the slot is silent</td><td>The recording may still be running (noise or a long tail keeps it open): turn <b>Record</b> off. If it never starts, lower <b>Rec Threshold dB</b>. Check you are on the same Bank and Slot you recorded into.</td></tr>
-  <tr><td>A project plays another project's sound</td><td>Both projects use the same Bank. Give each project its own Bank and re-record.</td></tr>
+  <tr><td>The keyboard plays nothing</td><td>Set <b>Sound</b> to Sine: a sine tone should sound. If it does not, the notes are not reaching this bus: set the keyboard to the MIDI channel with the bus number (or channel 16).</td></tr>
+  <tr><td>Record does nothing</td><td>Nothing reached the bus above the threshold: check the pad's Output and lower <b>Rec Threshold dB</b>.</td></tr>
+  <tr><td>Recorded but nothing plays</td><td>The recording may still be running (noise or a long tail keeps it open): turn <b>Record</b> off. If it never starts, lower <b>Rec Threshold dB</b>. Check that <b>Sound</b> is on <b>Sample</b> or on the recording's number.</td></tr>
+  <tr><td>A project plays the wrong sound</td><td>The project was saved before the recording reached the menu. Re-open KeySampler's page, check that <b>Sound</b> is <b>Sample</b>, and save the project again.</td></tr>
+  <tr><td>Waveforms play, recordings are silent</td><td>A Start or Loop point is past the end of the recording (oscillators ignore those points, recordings don't). Check Start / Loop Start / Loop End, or use <b>Changes &rarr; Default</b>, which resets them and keeps the sound.</td></tr>
   <tr><td>Pan has no effect</td><td>The bus is mono. Make its pair stereo in Bus Settings (<b>Mix</b>).</td></tr>
   <tr><td>Loop does nothing</td><td><b>Mode</b> must be Loop. Loop End 0 means the end of the sound; check the points are inside the sound's length.</td></tr>
-  <tr><td>A knob does nothing</td><td>Use CC Learn to assign it. If nothing can be learned, the S2400 is not forwarding that type of message.</td></tr>
+  <tr><td>A knob does nothing</td><td>Check the PCR is on memory 0 (GM2 set) and on the bus's MIDI channel. If it still does nothing, the S2400 is not forwarding that type of message.</td></tr>
   <tr><td>The menu does not follow a knob</td><td>The S2400 redraws the page only when it is opened: leave and re-open it. With two identical KeySamplers, change one setting on one of them so they can be told apart.</td></tr>
   <tr><td>Settings changed after an update</td><td>Parameters may have been renamed or reordered. Remove and re-add the plugin and re-enter settings.</td></tr>
 </table>
 <h3>Known limitations</h3>
 <ul>
-  <li>Sounds cannot be stored in the S2400 project file; use one Bank per project.</li>
+  <li>The sound itself stays on the DSP Card; the project stores only its number.</li>
   <li>Recordings live on the DSP Card only (not on the SD card).</li>
   <li>The S2400 file browser does not show the <code>dspcard</code> folder, so adding WAV files to the <code>samples</code> folder needs a computer. Recording from the bus does not.</li>
-  <li>Only bus 1 received keyboard notes in testing.</li>
-  <li>After B5 (Save) the S2400 shows the new values only when the plugin page is re-opened.</li>
+    <li>After Save the S2400 shows the new values only when the plugin page is re-opened.</li>
   <li>Maximum recording length 30 s; maximum point position 59.999 s.</li>
 </ul>
 </section>
@@ -521,8 +539,8 @@
   <tr><td>Note on</td><td class="mono">9n kk vv</td><td>kk 0&ndash;127, vv 1&ndash;127. vv = 0 is treated as note off. Pitch = kk &minus; Root Note + Tune (semitones).</td></tr>
   <tr><td>Polyphonic key pressure</td><td class="mono">An kk vv</td><td>Ignored.</td></tr>
   <tr><td>Control change</td><td class="mono">Bn cc vv</td><td>See A.2&ndash;A.4.</td></tr>
-  <tr><td>Program change</td><td class="mono">Cn pp</td><td>Lower number = Record on/off, higher = Filter step (A.5).</td></tr>
-  <tr><td>Channel pressure</td><td class="mono">Dn vv</td><td>Handled as a learnable controller. Default: Loop Start.</td></tr>
+  <tr><td>Program change</td><td class="mono">Cn pp</td><td>Lower number = Filter step, higher = Mode step (A.5).</td></tr>
+  <tr><td>Channel pressure</td><td class="mono">Dn vv</td><td>Loop Start.</td></tr>
   <tr><td>Pitch bend</td><td class="mono">En ll mm</td><td>14-bit, centre 8192. Range = Bend Range semitones. Applies to all sounding notes.</td></tr>
 </table>
 
@@ -532,34 +550,36 @@
   <tr><td class="mono">6 / 38</td><td>Data entry MSB / LSB</td><td>Data for RPN 0/1 and 0/2 (A.4). Other RPNs and NRPNs are ignored.</td></tr>
   <tr><td class="mono">11</td><td>Expression</td><td>Scales KeySampler's output 0&ndash;1 (initial value 127).</td></tr>
   <tr><td class="mono">64</td><td>Hold (sustain pedal)</td><td>&ge; 64 on. Notes released while held keep sounding until the pedal is released.</td></tr>
-  <tr><td class="mono">98 / 99</td><td>NRPN LSB / MSB</td><td>Ignored (not learnable).</td></tr>
+  <tr><td class="mono">98 / 99</td><td>NRPN LSB / MSB</td><td>Ignored.</td></tr>
   <tr><td class="mono">100 / 101</td><td>RPN LSB / MSB</td><td>Select the RPN for data entry.</td></tr>
   <tr><td class="mono">120</td><td>All sound off</td><td>Stops all voices immediately.</td></tr>
   <tr><td class="mono">121, 122</td><td>Reset controllers, local</td><td>Ignored.</td></tr>
   <tr><td class="mono">123</td><td>All notes off</td><td>Releases all notes.</td></tr>
   <tr><td class="mono">124, 125</td><td>Omni off / on</td><td>Ignored (always omni).</td></tr>
-  <tr><td class="mono">65</td><td>Portamento on/off</td><td>Button: steps Mode (One Shot &rarr; Gate &rarr; Loop), every message. Not learnable.</td></tr>
-  <tr><td class="mono">126</td><td>Mono mode on</td><td>Button: Save to Menu (controller changes &rarr; menu). Polyphony is not changed (use Voices).</td></tr>
-  <tr><td class="mono">127</td><td>Poly mode on</td><td>Button: Glide on/off.</td></tr>
+  <tr><td class="mono">65</td><td>Portamento on/off</td><td>Button: Glide on/off, every message.</td></tr>
+  <tr><td class="mono">80 / 81 / 82</td><td>General purpose 5&ndash;7</td><td>Buttons (value &ge; 64 = press): Record on/off / Save / Restore. Send them from L1&ndash;L3 (chapter 9).</td></tr>
+  <tr><td class="mono">126</td><td>Mono mode on</td><td>Ignored (B5). Polyphony is set with Voices.</td></tr>
+  <tr><td class="mono">127</td><td>Poly mode on</td><td>Button: LFO destination Pitch &rarr; Filter &rarr; Volume (B4).</td></tr>
 </table>
 
-<h3>A.3 Assignable control changes (default map)</h3>
-<p>CC 0&ndash;119 (except those in A.2) and channel pressure can be assigned with CC Learn. Defaults:</p>
+<h3>A.3 Control changes</h3>
+<p>Controllers mapped to KeySampler functions (other CCs are ignored):</p>
 <table>
-  <tr><th style="width:24mm">CC</th><th style="width:44mm">GM2 name</th><th>Default function</th></tr>
-  <tr><td class="mono">5</td><td>Portamento time</td><td>Start point</td></tr>
+  <tr><th style="width:24mm">CC</th><th style="width:44mm">GM2 name</th><th>Function</th></tr>
+  <tr><td class="mono">5</td><td>Portamento time</td><td>Attack*</td></tr>
   <tr><td class="mono">7</td><td>Volume</td><td>Level</td></tr>
   <tr><td class="mono">10</td><td>Pan</td><td>Pan</td></tr>
   <tr><td class="mono">71</td><td>Resonance (timbre)</td><td>Resonance</td></tr>
-  <tr><td class="mono">72</td><td>Release time</td><td>Release</td></tr>
-  <tr><td class="mono">73</td><td>Attack time</td><td>Attack</td></tr>
+  <tr><td class="mono">72</td><td>Release time</td><td>Start point</td></tr>
+  <tr><td class="mono">73</td><td>Attack time</td><td>Sustain*</td></tr>
   <tr><td class="mono">74</td><td>Cutoff (brightness)</td><td>Cutoff</td></tr>
-  <tr><td class="mono">75</td><td>Decay time</td><td>Decay</td></tr>
-  <tr><td class="mono">76 / 77 / 78</td><td>Vibrato rate / depth / delay</td><td>Vibrato rate / depth / delay</td></tr>
+  <tr><td class="mono">75</td><td>Decay time</td><td>Release*</td></tr>
+  <tr><td class="mono">76 / 77 / 78</td><td>Vibrato rate / depth / delay</td><td>LFO rate / depth / delay</td></tr>
   <tr><td class="mono">91</td><td>Reverb send</td><td>Loop End</td></tr>
-  <tr><td class="mono">93</td><td>Chorus send</td><td>Sustain</td></tr>
-  <tr><td class="mono">Dn vv</td><td>Channel pressure</td><td>Loop Start</td></tr>
+  <tr><td class="mono">93</td><td>Chorus send</td><td>Loop Start</td></tr>
+  <tr><td class="mono">Dn vv</td><td>Channel pressure</td><td>Decay*</td></tr>
 </table>
+<p>* Volume envelope, or the filter envelope after B6 (GM2 System On).</p>
 <p>Value scaling is listed in chapter 8. A controller value overrides the menu value until that parameter is changed in the menu.</p>
 
 <h3>A.4 Registered parameters</h3>
@@ -572,23 +592,21 @@
 <p>Coarse and fine combine into Tune; the result replaces the menu Tune value until Tune is changed in the menu.</p>
 
 <h3>A.5 Program change</h3>
-<p>Program change is used for two buttons: a number <b>lower</b> than the previous one toggles <b>Record</b> (B1, "program change dec"), a <b>higher</b> one steps the <b>Filter</b> type (B2, "inc"). A repeated 0 counts as lower, any other repeated number as higher; the first program change received counts as lower if it is 0.</p>
+<p>Program change is used for two buttons: a number <b>lower</b> than the previous one steps the <b>Filter</b> type (B1, "program change dec"), a <b>higher</b> one steps the <b>Mode</b> (B2, "inc"). A repeated 0 counts as lower, any other repeated number as higher; the first program change received counts as lower if it is 0.</p>
 
 <h3>A.6 System exclusive</h3>
 <table>
   <tr><th style="width:62mm">Message</th><th>Behaviour</th></tr>
-  <tr><td class="mono">F0 7E 7F 09 03 F7 (GM2 System On)</td><td>Restore Menu (forget controller changes).</td></tr>
+  <tr><td class="mono">F0 7E 7F 09 03 F7 (GM2 System On)</td><td>Sliders S1&ndash;S4 switch between volume and filter envelope (B6).</td></tr>
   <tr><td>All other SysEx</td><td>Ignored.</td></tr>
 </table>
 
-<h3>A.7 CC Learn targets</h3>
-<p class="mono" style="line-height:1.7">0 Off · 1 Level · 2 Cutoff · 3 Resonance · 4 Attack · 5 Decay · 6 Sustain · 7 Release · 8 Tune · 9 Start · 10 Loop Start · 11 Loop End · 12 Slot · 13 Record · 14 Filter Type · 15 Mode · 16 Pan · 17 Vib Rate · 18 Vib Depth · 19 Vib Delay · 20 Thru · 21 Glide Mode · 22 Glide Time · 23 Filter Env · 24 F.Env Amount · 25 F.Env Attack · 26 F.Env Decay · 27 F.Env Sustain · 28 F.Env Release · 29 Save to Menu · 30 Restore Menu · 31 Reset Map</p>
 </section>
 
 <!-- ============================================================ APPENDIX B -->
 <section class="chapter">
 <h2><span class="n">B</span>MIDI implementation chart</h2>
-<p class="small">Model: KeySampler 0.17 (LV2 plugin for the S2400 DSP Card) &nbsp;·&nbsp; Date: 25 October 2026 &nbsp;·&nbsp; <span class="o">O</span> = yes, <span class="x">X</span> = no<br>* Default assignment, can be changed with CC Learn. Reception depends on what the S2400 forwards to the DSP bus.</p>
+<p class="small">Model: KeySampler 0.35 (LV2 plugin for the S2400 DSP Card) &nbsp;·&nbsp; Date: 27 October 2026 &nbsp;·&nbsp; <span class="o">O</span> = yes, <span class="x">X</span> = no<br>* S1&ndash;S4: volume or filter envelope (B6). Reception depends on what the S2400 forwards to the DSP bus.</p>
 <table class="chart">
   <thead><tr><th style="width:44mm">Function</th><th style="width:28mm" class="c">Transmitted</th><th style="width:44mm">Recognized</th><th>Remarks</th></tr></thead>
   <tr class="grp"><td colspan="4">Basic channel</td></tr>
@@ -596,36 +614,37 @@
   <tr><td>Changed</td><td class="c x">X</td><td class="x">X</td><td></td></tr>
   <tr class="grp"><td colspan="4">Mode</td></tr>
   <tr><td>Default</td><td class="c x">X</td><td>Mode 1 (omni on, poly)</td><td></td></tr>
-  <tr><td>Messages</td><td class="c x">X</td><td class="x">X</td><td>CC 126/127 are used as buttons, not as mode changes</td></tr>
+  <tr><td>Messages</td><td class="c x">X</td><td class="x">X</td><td>CC 126/127 (mode messages) are ignored</td></tr>
   <tr class="grp"><td colspan="4">Note</td></tr>
   <tr><td>Note number</td><td class="c x">X</td><td>0&ndash;127</td><td></td></tr>
   <tr><td>Velocity: note on</td><td class="c x">X</td><td><span class="o">O</span> (9n v=1&ndash;127)</td><td>Vel Sens</td></tr>
   <tr><td>Velocity: note off</td><td class="c x">X</td><td class="x">X</td><td></td></tr>
   <tr class="grp"><td colspan="4">Aftertouch</td></tr>
   <tr><td>Polyphonic (key)</td><td class="c x">X</td><td class="x">X</td><td></td></tr>
-  <tr><td>Channel</td><td class="c x">X</td><td><span class="o">O</span></td><td>Assignable, default Loop Start</td></tr>
+  <tr><td>Channel</td><td class="c x">X</td><td><span class="o">O</span></td><td>Decay (volume / filter envelope)</td></tr>
   <tr class="grp"><td colspan="4">Pitch bend</td></tr>
   <tr><td>Pitch bend</td><td class="c x">X</td><td><span class="o">O</span></td><td>0&ndash;24 semitones (Bend Range)</td></tr>
   <tr class="grp"><td colspan="4">Control change</td></tr>
-  <tr><td>5</td><td class="c x">X</td><td><span class="o">O</span></td><td>Start point*</td></tr>
+  <tr><td>5</td><td class="c x">X</td><td><span class="o">O</span></td><td>Attack*</td></tr>
   <tr><td>6, 38</td><td class="c x">X</td><td><span class="o">O</span></td><td>Data entry (RPN)</td></tr>
   <tr><td>7</td><td class="c x">X</td><td><span class="o">O</span></td><td>Level*</td></tr>
   <tr><td>10</td><td class="c x">X</td><td><span class="o">O</span></td><td>Pan*</td></tr>
   <tr><td>11</td><td class="c x">X</td><td><span class="o">O</span></td><td>Expression</td></tr>
   <tr><td>64</td><td class="c x">X</td><td><span class="o">O</span></td><td>Hold</td></tr>
-  <tr><td>65</td><td class="c x">X</td><td><span class="o">O</span></td><td>Mode step (button)</td></tr>
-  <tr><td>71, 72, 73, 74, 75</td><td class="c x">X</td><td><span class="o">O</span></td><td>Resonance, Release, Attack, Cutoff, Decay*</td></tr>
-  <tr><td>76, 77, 78</td><td class="c x">X</td><td><span class="o">O</span></td><td>Vibrato rate, depth, delay*</td></tr>
-  <tr><td>91, 93</td><td class="c x">X</td><td><span class="o">O</span></td><td>Loop End, Sustain*</td></tr>
-  <tr><td>0&ndash;119 (others)</td><td class="c x">X</td><td><span class="o">O</span></td><td>Via CC Learn (not 65, 98&ndash;101)</td></tr>
+  <tr><td>65</td><td class="c x">X</td><td><span class="o">O</span></td><td>Glide on/off (button)</td></tr>
+  <tr><td>71, 72, 73, 74, 75</td><td class="c x">X</td><td><span class="o">O</span></td><td>Resonance, Start, Sustain*, Cutoff, Release*</td></tr>
+  <tr><td>76, 77, 78</td><td class="c x">X</td><td><span class="o">O</span></td><td>LFO rate, depth, delay</td></tr>
+  <tr><td>91, 93</td><td class="c x">X</td><td><span class="o">O</span></td><td>Loop End, Loop Start</td></tr>
+  <tr><td>80, 81, 82</td><td class="c x">X</td><td><span class="o">O</span></td><td>Record, Save, Restore (buttons)</td></tr>
+  <tr><td>0&ndash;119 (others)</td><td class="c x">X</td><td><span class="o">O</span></td><td>Ignored</td></tr>
   <tr><td>98, 99 (NRPN)</td><td class="c x">X</td><td class="x">X</td><td></td></tr>
   <tr><td>100, 101 (RPN)</td><td class="c x">X</td><td><span class="o">O</span></td><td>RPN 0/1 fine tune, 0/2 coarse tune</td></tr>
   <tr><td>120, 123</td><td class="c x">X</td><td><span class="o">O</span></td><td>All sound off, all notes off</td></tr>
-  <tr><td>126, 127</td><td class="c x">X</td><td><span class="o">O</span></td><td>Save to Menu, Glide on/off</td></tr>
+  <tr><td>126, 127</td><td class="c x">X</td><td><span class="o">O</span></td><td>126 ignored; 127 LFO destination (button)</td></tr>
   <tr class="grp"><td colspan="4">Program change</td></tr>
-  <tr><td>Program change</td><td class="c x">X</td><td><span class="o">O</span> (0&ndash;127)</td><td>Record on/off (lower) / Filter step (higher)</td></tr>
+  <tr><td>Program change</td><td class="c x">X</td><td><span class="o">O</span> (0&ndash;127)</td><td>Filter step (lower) / Mode step (higher)</td></tr>
   <tr class="grp"><td colspan="4">System</td></tr>
-  <tr><td>System exclusive</td><td class="c x">X</td><td><span class="o">O</span></td><td>GM2 System On only (Restore Menu)</td></tr>
+  <tr><td>System exclusive</td><td class="c x">X</td><td><span class="o">O</span></td><td>GM2 System On only (S1&ndash;S4 envelope switch)</td></tr>
   <tr><td>System common</td><td class="c x">X</td><td class="x">X</td><td></td></tr>
   <tr><td>System real time (incl. active sensing, reset)</td><td class="c x">X</td><td class="x">X</td><td></td></tr>
   <tr><td>Reset all controllers, local on/off (121, 122)</td><td class="c x">X</td><td class="x">X</td><td></td></tr>
@@ -637,11 +656,10 @@
 <h2><span class="n">C</span>Files and storage on the DSP Card</h2>
 <table>
   <tr><th style="width:80mm">Location on the DSP Card</th><th>Contents</th></tr>
-  <tr><td class="mono">/home/isla/user/plugins/lv2/keysampler.lv2/</td><td>The plugin, copied from <span class="mono">SD:/dspcard/lv2/</span> by Sync Files</td></tr>
-  <tr><td class="mono">…/keysampler.lv2/samples/</td><td>Optional WAV files; slot N with no recording plays the Nth file by name</td></tr>
-  <tr><td class="mono">/home/isla/user/keysampler_recordings/slotNN.wav</td><td>Bank 1 recordings</td></tr>
-  <tr><td class="mono">/home/isla/user/keysampler_recordings/bankBB/slotNN.wav</td><td>Recordings of bank BB (02&ndash;99)</td></tr>
-  <tr><td class="mono">/home/isla/user/keysampler_recordings/cc_map.txt</td><td>Changes to the default CC map (from CC Learn)</td></tr>
+  <tr><td class="mono">/home/isla/user/plugins/lv2/keysampler.lv2/</td><td>The plugin, copied from <span class="mono">SD:/dspcard/plugins/lv2/</span> by Sync Files</td></tr>
+  <tr><td class="mono">…/keysampler.lv2/samples/</td><td>Optional <span class="mono">sample_NNNN.wav</span> files added with Sync Files</td></tr>
+  <tr><td class="mono">/home/isla/user/keysampler_recordings/sample_NNNN.wav</td><td>Recordings, one number each (0001&ndash;9999), the number the Sound menu shows</td></tr>
+  <tr><td class="mono">/home/isla/user/keysampler_recordings/last_number.txt</td><td>Highest number given out so far</td></tr>
 </table>
 <ul>
   <li>Recordings are 16-bit stereo PCM WAV at the DSP Card's sample rate (48 kHz), about 190 KB per second.</li>
@@ -656,7 +674,7 @@
   <tr><td>Filter</td><td>2-pole state-variable (TPT) per voice, LP / BP / HP, 20 Hz &ndash; 20 kHz, ADSR envelope</td></tr>
   <tr><td>Oscillators</td><td>Sine, triangle, square, sawtooth; 2048-point tables, one band-limited table per octave (harmonics &lt; 20 kHz)</td></tr>
   <tr><td>Recording</td><td>Up to 30 s, threshold &minus;80 to &minus;6 dB, 0.7 ms pre-roll, 0.4 s silence stop</td></tr>
-  <tr><td>Storage</td><td>99 banks &times; 64 slots</td></tr>
+  <tr><td>Storage</td><td>9996 numbered recordings (limited by the card's free space)</td></tr>
   <tr><td>Save to Menu</td><td>gRPC (HTTP/2) to sushi on 127.0.0.1:51051: GetAllProcessors, GetProcessorParameters, GetParameterValue, SetParameterValue (normalized values)</td></tr>
   <tr><td>Real-time safety</td><td>The audio thread never reads files or allocates memory; a background thread loads, saves and rescans the samples folder every 2 s</td></tr>
 </table>

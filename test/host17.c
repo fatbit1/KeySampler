@@ -1,5 +1,5 @@
-/* PCR-M30 button test: B1-B4.
- * usage: host11 <plugin-uri> <out.wav> */
+/* LFO test: LFO depth 100, 4 Hz; env B4 = number of B4 presses (0 pitch, 1 filter, 2 volume).
+ * usage: host17 <plugin-uri> <out.wav>   env B4, FILTER, CUTOFF, RESO, SAMPLE */
 #include <lilv/lilv.h>
 #include <lv2/atom/atom.h>
 #include <lv2/atom/util.h>
@@ -47,27 +47,23 @@ int main(int argc, char** argv) {
     lilv_instance_connect_port(in, 0, &mid);
     lilv_instance_connect_port(in, 1, L); lilv_instance_connect_port(in, 2, R);
     lilv_instance_connect_port(in, 3, IL); lilv_instance_connect_port(in, 4, IR);
+    ctl[idx("sample")] = getenv("SAMPLE") ? atof(getenv("SAMPLE")) : 5; ctl[idx("mode")] = getenv("MODE") ? atof(getenv("MODE")) : 2;
+    ctl[idx("filter")] = getenv("FILTER") ? atof(getenv("FILTER")) : 1; ctl[idx("cutoff")] = getenv("CUTOFF") ? atof(getenv("CUTOFF")) : 50; ctl[idx("resonance")] = getenv("RESO") ? atof(getenv("RESO")) : 0;
+    ctl[idx("attack")] = 0; ctl[idx("sustain")] = 1; ctl[idx("vib_depth")] = 100; ctl[idx("vib_rate")] = 4;
+    if (getenv("LSMS")) ctl[idx("loop_start_msec")] = atof(getenv("LSMS"));
+    if (getenv("LEMS")) ctl[idx("loop_end_msec")] = atof(getenv("LEMS"));
     lilv_instance_activate(in);
 
     #define ON2(t,n) { t, 3, { 0x90, n, 127 } }
     #define OFF2(t,n) { t, 3, { 0x80, n, 0 } }
     #define CCX(t,c,v) { t, 3, { 0xB0, c, v } }
-    #define PC(t,n) { t, 2, { 0xC0, n } }
-    Ev ev[] = {
-        ON2(0.10, 60), OFF2(0.40, 60),                 /* baseline 440 Hz */
-        PC(0.50, 0), PC(0.90, 0),                      /* B1 twice: record on, record off */
-        PC(1.30, 1), CCX(1.30, 74, 0),                 /* B2: filter Off -> LP; R1 cutoff min */
-        ON2(1.40, 60), OFF2(1.70, 60),                 /* filtered */
-        CCX(1.80, 74, 127), CCX(1.90, 65, 127),        /* R1 open; B3: mode Gate -> Loop */
-        CCX(2.30, 127, 0),                             /* B4: glide on (Portamento) */
-        ON2(2.40, 60), OFF2(2.70, 60), ON2(2.75, 72), OFF2(3.10, 72),
-        CCX(3.20, 126, 1),                             /* B5: next slot -> 2 (empty) */
-        ON2(3.30, 60), OFF2(3.50, 60),
-        CCX(3.70, 127, 0),                             /* B4: glide off */
-    };
-    int nev = sizeof ev / sizeof ev[0], ei = 0;
+    int nb4 = getenv("B4") ? atoi(getenv("B4")) : 0;
+    Ev ev[8]; int ne = 0;
+    for (int k = 0; k < nb4; ++k) { Ev b = CCX(0.02 + 0.01 * k, 127, 0); ev[ne++] = b; }   /* B4 presses */
+    { Ev on = ON2(0.10, 48); Ev off = OFF2(2.30, 48); ev[ne++] = on; ev[ne++] = off; }
+    int nev = ne, ei = 0;
     LV2_URID midi_t = map_uri(NULL, LV2_MIDI__MidiEvent), seq_t = map_uri(NULL, LV2_ATOM__Sequence);
-    uint32_t total = (uint32_t)(RATE * 4.2);
+    uint32_t total = (uint32_t)(RATE * 2.6);
     int16_t* out = calloc(total * 2, 2);
     for (uint32_t pos = 0; pos < total; pos += BLOCK) {
         mid.seq.atom.type = seq_t; mid.seq.atom.size = sizeof(LV2_Atom_Sequence_Body);
@@ -81,6 +77,7 @@ int main(int argc, char** argv) {
             lv2_atom_sequence_append_event(&mid.seq, sizeof mid.buf + sizeof(LV2_Atom_Sequence_Body), &x.e);
             ++ei;
         }
+        { }
         lilv_instance_run(in, BLOCK);
         for (int i = 0; i < BLOCK && pos + i < total; ++i) {
             out[(pos + i) * 2] = (int16_t)(fmaxf(-1, fminf(1, L[i])) * 32767);

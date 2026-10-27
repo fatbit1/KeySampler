@@ -59,7 +59,8 @@ int main(int argc, char** argv) {
     float* ctl = calloc(np, 4), *mn = calloc(np, 4), *mx = calloc(np, 4);
     lilv_plugin_get_port_ranges_float(p, mn, mx, ctl);
     float L[BLOCK], R[BLOCK];
-    float bank = getenv("BANK") ? atof(getenv("BANK")) : 1;
+    float smp_no = getenv("SAMPLE") ? atof(getenv("SAMPLE")) : 0;
+    float seq_v = -1;
     double hz = getenv("HZ") ? atof(getenv("HZ")) : 330;
     struct { LV2_Atom_Sequence seq; uint8_t buf[4096]; } mid;
     for (uint32_t i = 0; i < np; ++i) lilv_instance_connect_port(in, i, &ctl[i]);
@@ -85,18 +86,37 @@ int main(int argc, char** argv) {
     int16_t* out = calloc(total * 2, 2);
     for (uint32_t pos = 0; pos < total; pos += BLOCK) {
         double now = (double)pos / RATE;
-        ctl[idx("bank")] = bank;
         if (cctest) {
-            ctl[idx("slot")] = 1; ctl[idx("mode")] = 2; ctl[idx("filter")] = 1;
+            ctl[idx("sample")] = 0; ctl[idx("mode")] = 2; ctl[idx("filter")] = 1;
             ctl[idx("cutoff")] = now >= 1.5 ? 30 : 100;
-            ctl[idx("cc_learn")] = now >= 2.0 ? 1 : 0;
-        } else if (loop) { ctl[idx("slot")] = 1; ctl[idx("mode")] = 2; set_ms(ctl, "loop_start", atof(argv[4])); set_ms(ctl, "loop_end", atof(argv[5]));
+        } else if (loop) { ctl[idx("sample")] = 0; ctl[idx("mode")] = 2; set_ms(ctl, "loop_start", atof(argv[4])); set_ms(ctl, "loop_end", atof(argv[5]));
             if (argc > 8) { ctl[idx("filter")] = atof(argv[6]); ctl[idx("cutoff")] = atof(argv[7]); ctl[idx("resonance")] = atof(argv[8]); }
             if (getenv("START")) set_ms(ctl, "start", atof(getenv("START")));
             if (getenv("LSS")) ctl[idx("loop_start_smp")] = atof(getenv("LSS")); }
-        else if (reload) ctl[idx("slot")] = 2;
+        else if (reload) ctl[idx("sample")] = smp_no;
+        if (getenv("SAMPLE_ID")) ctl[idx("sample_id")] = atof(getenv("SAMPLE_ID"));
         else {
-            ctl[idx("slot")] = (now >= 3.6 && now < 4.5) ? 1 : 2;
+            ctl[idx("sample")] = smp_no;
+            /* ROUNDTRIP=1: like the S2400 after a recording, send back the newest number the
+             * way it travels (normalized 0..1 as float, then scaled again) */
+            if (getenv("ROUNDTRIP") && now >= 2.1) {
+                static float back = -1;
+                if (back < 0) {
+                    char d[1200]; snprintf(d, sizeof d, "%s", getenv("RECDIR") ? getenv("RECDIR") : ".");
+                    int hi = 0; for (int n = 1; n <= 9999; ++n) { char f[1300]; snprintf(f, sizeof f, "%s/sample_%04d.wav", d, n); FILE* t = fopen(f, "rb"); if (t) { fclose(t); hi = n; } }
+                    float norm = (float)hi / 9999.f; back = norm * 9999.f;
+                    fprintf(stderr, "roundtrip: newest recording %d comes back as Sample ID %.7f\n", hi, back);
+                }
+                ctl[idx("sample")] = (4.f / 10003.f) * 10003.f;   /* Sound = "Sample" */
+                ctl[idx("sample_id")] = back;
+            }
+            /* NOECHO=1: the menu sends Sound = Sample, but Sample ID stays 0 */
+            if (getenv("NOECHO") && now >= 2.1) { ctl[idx("sample")] = 4; ctl[idx("sample_id")] = 0; }
+            /* SEQ="t:v,...": change Sample at those times (after the round trip, if any) */
+            if (getenv("SEQ")) { const char* c = getenv("SEQ"); float v = -1;
+                while (c && *c) { double t0; float v0; if (sscanf(c, "%lf:%f", &t0, &v0) != 2) break;
+                    if (now >= t0) v = v0; c = strchr(c, ','); if (c) ++c; }
+                if (v >= 0) seq_v = v; if (seq_v >= 0) ctl[idx("sample")] = seq_v; }
             ctl[idx("record")] = (now >= 0.2 && now < 2.0) ? 1 : 0;
         }
         /* input: the "pad hit" - 330 Hz with harmonics, sharp attack, 0.6 s decay */

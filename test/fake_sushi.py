@@ -3,7 +3,7 @@ extracted from the DSP Card firmware. Lists processors, serves KeySampler's
 parameter list (from its TTL) and logs SetParameterValue calls.
 
 usage: python3 fake_sushi.py <sushi_rpc.desc> <keysampler.ttl> <port> <log> [two]
-  "two" = also list a second KeySampler (id 9, different Slot) to test
+  "two" = also list a second KeySampler (id 9, different Sample) to test
   instance identification.
 """
 import re, sys, time
@@ -27,7 +27,7 @@ for blk in re.findall(r'\[\n\s+a lv2:InputPort, lv2:ControlPort ;(.*?)\n    \]',
                        lo=float(g("lv2:minimum")), hi=float(g("lv2:maximum"))))
 norm = lambda p, v: (v - p["lo"]) / (p["hi"] - p["lo"])
 values = {7: [norm(p, p["d"]) for p in params], 9: [norm(p, p["d"]) for p in params]}
-values[9][[p["sym"] for p in params].index("slot")] = norm(params[[p["sym"] for p in params].index("slot")], 5)  # other instance: slot 5
+values[9][[p["sym"] for p in params].index("sample")] = norm(params[[p["sym"] for p in params].index("sample")], 5)  # other instance: sample 5
 log = open(log_path, "w", buffering=1)
 
 def all_processors(req, ctx):
