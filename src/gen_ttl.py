@@ -4,7 +4,7 @@ port_sym[] in keysampler.c. The S2400 shows only the first 32 controls."""
 import os
 
 URI = "https://github.com/keysampler/KeySampler"
-MINOR = 35
+MINOR = 40
 
 def enum(*labels):
     return [("scale", labels)]
@@ -14,7 +14,7 @@ INT, TOG = "int", "toggle"
 
 # (symbol, menu name, default, min, max, kind or scale labels)
 CONTROLS = [
-    # ---- shown in the S2400 menu (32) ----
+    # ---- the menu (29) ----
     ("sample", "Sound", 0, 0, 10003, ["Sine", "Triangle", "Square", "Saw", "Sample"] + [str(i) for i in range(1, 10000)]),  # Sample = own recording; 1-9999 pick any
     ("record", "Record", 0, 0, 1, TOG),
     ("threshold", "Rec Threshold dB", -50.0, -80.0, -6.0, None),
@@ -22,10 +22,6 @@ CONTROLS = [
     ("level", "Level", 1.0, 0.0, 2.0, None),
     ("root", "Root Note", 60, 0, 127, INT),
     ("tune", "Tune", 0.0, -24.0, 24.0, None),
-    ("attack", "Attack ms", 1.0, 0.0, 2000.0, None),
-    ("decay", "Decay ms", 200.0, 0.0, 5000.0, None),
-    ("sustain", "Sustain", 1.0, 0.0, 1.0, None),
-    ("release", "Release ms", 150.0, 0.0, 5000.0, None),
     ("start_sec", "Start sec", 0, 0, 59, INT),
     ("start_msec", "Start ms", 0, 0, 999, INT),
     ("loop_start_sec", "Loop Start sec", 0, 0, 59, INT),
@@ -33,33 +29,43 @@ CONTROLS = [
     ("loop_end_sec", "Loop End sec", 0, 0, 59, INT),
     ("loop_end_msec", "Loop End ms", 0, 0, 999, INT),
     ("filter", "Filter", 0, 0, 3, ["Off", "Low Pass", "Band Pass", "High Pass"]),
+    ("glide_mode", "Glide Mode", 0, 0, 2, ["Off", "Portamento", "Legato"]),
+    ("ks_pan", "Pan", 0.0, -1.0, 1.0, None),  # not "pan": the DSP Card software uses that name for bus pan
+    ("voices", "Voices", 16, 1, 16, INT),
+    ("midi_ch", "MIDI Channel", 0, 0, 16, ["Omni"] + [str(i) for i in range(1, 17)]),
+    ("velsens", "Vel Sens", 1.0, 0.0, 1.0, None),
+    ("bend", "Bend Range", 2, 0, 24, INT),
+    ("start_smp", "Start smp", 0, 0, 95, INT),
+    ("loop_start_smp", "Loop Start smp", 0, 0, 95, INT),
+    ("loop_end_smp", "Loop End smp", 0, 0, 95, INT),
+    ("fenv_amount", "F.Env Amount", 0.0, -100.0, 100.0, None),  # 0 = filter envelope off
+    ("modulation", "Modulation", 0, 0, 3, ["Volume", "Filter", "Pitch", "Pan"]),  # where R3-R5 (and S1-S4 for Filter) go; B4-B6 too
+    ("lfo_rate", "LFO Rate Hz", 5.0, 0.1, 12.0, None),    # these three show / edit the LFO Modulation selects
+    ("lfo_depth", "LFO Depth", 0.0, 0.0, 100.0, None),
+    ("lfo_delay", "LFO Delay ms", 0.0, 0.0, 2000.0, None),
+    ("save_restore", "Changes", 0, 0, 4, ["---", "Save", "Restore", "Default", "Delete"]),
+    # ---- also visible: the S2400 always shows the first 32 ----
     ("cutoff", "Cutoff", 100.0, 0.0, 100.0, None),
     ("resonance", "Resonance", 0.0, 0.0, 1.0, None),
-    ("fenv_amount", "F.Env Amount", 0.0, -100.0, 100.0, None),
+    ("glide", "Glide ms", 100.0, 0.0, 2000.0, None),
+    # ---- hidden (saved with the project; PCR / defaults) ----
+    ("thru", "Thru", 1, 0, 1, TOG),
+    ("fenv", "Filter Env", 1, 0, 1, TOG),
+    ("attack", "Attack ms", 1.0, 0.0, 2000.0, None),
+    ("decay", "Decay ms", 200.0, 0.0, 5000.0, None),
+    ("sustain", "Sustain", 1.0, 0.0, 1.0, None),
+    ("release", "Release ms", 150.0, 0.0, 5000.0, None),
     ("fenv_attack", "F.Env Attack ms", 5.0, 0.0, 2000.0, None),
     ("fenv_decay", "F.Env Decay ms", 300.0, 0.0, 5000.0, None),
     ("fenv_sustain", "F.Env Sustain", 0.2, 0.0, 1.0, None),
     ("fenv_release", "F.Env Release ms", 300.0, 0.0, 5000.0, None),
-    ("glide_mode", "Glide Mode", 0, 0, 2, ["Off", "Portamento", "Legato"]),
-    ("glide", "Glide ms", 100.0, 0.0, 2000.0, None),
-    ("vib_depth", "LFO Depth", 0.0, 0.0, 100.0, None),
-    ("vib_rate", "LFO Rate Hz", 5.0, 0.1, 12.0, None),
-    ("ks_pan", "Pan", 0.0, -1.0, 1.0, None),  # not "pan": the DSP Card software uses that name for bus pan
-    ("voices", "Voices", 16, 1, 16, INT),
-    ("save_restore", "Changes", 0, 0, 4, ["---", "Save", "Restore", "Default", "Delete"]),
-    # ---- beyond the S2400's 32 (defaults; reachable by MIDI CC) ----
-    ("thru", "Thru", 1, 0, 1, TOG),
-    ("velsens", "Vel Sens", 1.0, 0.0, 1.0, None),
-    ("bend", "Bend Range", 2, 0, 24, INT),
-    ("vib_delay", "LFO Delay ms", 0.0, 0.0, 2000.0, None),
-    ("start_smp", "Start smp", 0, 0, 95, INT),
-    ("loop_start_smp", "Loop Start smp", 0, 0, 95, INT),
-    ("loop_end_smp", "Loop End smp", 0, 0, 95, INT),
-    ("fenv", "Filter Env", 1, 0, 1, TOG),
     ("menu_sync", "Auto Menu Sync", 0, 0, 1, TOG),
-    ("lfo_dest", "LFO Dest", 0, 0, 2, ["Pitch", "Filter", "Volume"]),
     ("sample_id", "Sample ID", 0, 0, 9999, INT),  # the recording "Sample" plays; set by Record
-]
+] + [c for sec, nm in (("vol", "Vol"), ("flt", "Filter"), ("pit", "Pitch"), ("pan", "Pan")) for c in (
+    (f"lfo_{sec}_depth", f"{nm} LFO Depth", 0.0, 0.0, 100.0, None),
+    (f"lfo_{sec}_rate", f"{nm} LFO Rate Hz", 5.0, 0.1, 12.0, None),
+    (f"lfo_{sec}_delay", f"{nm} LFO Delay ms", 0.0, 0.0, 2000.0, None),
+)]
 
 def num(v):
     return f"{v:.1f}" if isinstance(v, float) else str(v)

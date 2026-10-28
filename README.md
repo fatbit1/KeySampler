@@ -19,10 +19,10 @@ saved on the S2400 itself.
 - 16 voices, ADSR, velocity, pitch bend, sustain pedal, expression
 - One Shot / Gate / Loop / Ping-Pong modes; start and loop points in the S2400's own `sec : ms + smp` format
 - Moog-style 24 dB/oct ladder filter (low / band / high pass) with drive, self-oscillating resonance and its own ADSR
-- Portamento and legato glide; an LFO with delay to pitch, filter or volume (B4); pan
+- Portamento and legato glide; four LFOs with delay (volume, filter, pitch, pan); pan
 - Built-in band-limited sine, triangle, square and saw oscillators
-- Laid out for the Edirol PCR-M30 **GM2 set** (L1–L3 set to CC 80–82 for Record / Save / Restore)
-- **Changes** menu: Save / Restore (also L2 / L3) / Default / Delete. Controller moves change the sound only;
+- Laid out for the Edirol PCR-M30 **GM2 set**: R3–R5 set the volume LFO, or the pitch / filter / pan LFO after B4 / B5 / B6; R6 = Glide ms; B5 also moves S1–S4 to the filter envelope
+- **Changes** menu: Save / Restore / Default / Delete. Controller moves change the sound only;
   Save writes them into the S2400 menu (so the project saves them), Restore goes back to the saved settings,
   Default resets everything but the sound, Delete removes the recording picked by number in Sound
 

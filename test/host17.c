@@ -49,7 +49,11 @@ int main(int argc, char** argv) {
     lilv_instance_connect_port(in, 3, IL); lilv_instance_connect_port(in, 4, IR);
     ctl[idx("sample")] = getenv("SAMPLE") ? atof(getenv("SAMPLE")) : 5; ctl[idx("mode")] = getenv("MODE") ? atof(getenv("MODE")) : 2;
     ctl[idx("filter")] = getenv("FILTER") ? atof(getenv("FILTER")) : 1; ctl[idx("cutoff")] = getenv("CUTOFF") ? atof(getenv("CUTOFF")) : 50; ctl[idx("resonance")] = getenv("RESO") ? atof(getenv("RESO")) : 0;
-    ctl[idx("attack")] = 0; ctl[idx("sustain")] = 1; ctl[idx("vib_depth")] = 100; ctl[idx("vib_rate")] = 4;
+    ctl[idx("attack")] = 0; ctl[idx("sustain")] = 1;
+    /* LFO=vol|flt|pit|pan: that LFO at depth 100, 4 Hz, set in the menu */
+    if (getenv("LFO")) { char n[40]; snprintf(n, sizeof n, "lfo_%s_depth", getenv("LFO")); ctl[idx(n)] = 100;
+                         snprintf(n, sizeof n, "lfo_%s_rate", getenv("LFO")); ctl[idx(n)] = 4; }
+    if (getenv("MODU")) ctl[idx("modulation")] = atof(getenv("MODU"));   /* 0 Volume, 1 Filter, 2 Pitch, 3 Pan */
     if (getenv("LSMS")) ctl[idx("loop_start_msec")] = atof(getenv("LSMS"));
     if (getenv("LEMS")) ctl[idx("loop_end_msec")] = atof(getenv("LEMS"));
     lilv_instance_activate(in);
@@ -57,15 +61,25 @@ int main(int argc, char** argv) {
     #define ON2(t,n) { t, 3, { 0x90, n, 127 } }
     #define OFF2(t,n) { t, 3, { 0x80, n, 0 } }
     #define CCX(t,c,v) { t, 3, { 0xB0, c, v } }
-    int nb4 = getenv("B4") ? atoi(getenv("B4")) : 0;
-    Ev ev[8]; int ne = 0;
-    for (int k = 0; k < nb4; ++k) { Ev b = CCX(0.02 + 0.01 * k, 127, 0); ev[ne++] = b; }   /* B4 presses */
-    { Ev on = ON2(0.10, 48); Ev off = OFF2(2.30, 48); ev[ne++] = on; ev[ne++] = off; }
+    /* PRESS="4", "55", "46" ...: B4/B5/B6 presses, then R4 (depth) to max and R3 (rate) to ~4 Hz */
+    const char* pr = getenv("PRESS");
+    Ev ev[16]; int ne = 0;
+    for (int k = 0; pr && pr[k]; ++k) {
+        double t = 0.02 + 0.25 * k;
+        if (pr[k] == '4') { Ev b = CCX(t, 127, 0); ev[ne++] = b; }
+        else if (pr[k] == '5') { Ev b = CCX(t, 126, 1); ev[ne++] = b; }
+        else if (pr[k] == '6') { Ev b = { t, 6, { 0xF0, 0x7E, 0x7F, 0x09, 0x03, 0xF7 } }; ev[ne++] = b; }
+        else if (pr[k] == 'p') { Ev b = CCX(t, 87, 127); ev[ne++] = b; }   /* B6 re-set to CC 87 */
+    }
+    if (pr) { Ev d = CCX(0.08 + 0.25 * strlen(pr), 77, 127), r = CCX(0.08 + 0.25 * strlen(pr), 76, 73); ev[ne++] = d; ev[ne++] = r; }
+    { Ev on = ON2(pr ? 0.15 + 0.25 * strlen(pr) : 0.10, 48); Ev off = OFF2(pr ? 2.40 + 0.25 * strlen(pr) : 2.30, 48); ev[ne++] = on; ev[ne++] = off; }
     int nev = ne, ei = 0;
     LV2_URID midi_t = map_uri(NULL, LV2_MIDI__MidiEvent), seq_t = map_uri(NULL, LV2_ATOM__Sequence);
-    uint32_t total = (uint32_t)(RATE * 2.6);
+    uint32_t total = (uint32_t)(RATE * (2.6 + (pr ? 0.25 * strlen(pr) + 0.1 : 0)));
     int16_t* out = calloc(total * 2, 2);
     for (uint32_t pos = 0; pos < total; pos += BLOCK) {
+        /* UI=1: menu LFO Depth 100 and Rate 4 Hz, entered 50 ms after start (for the LFO Modulation selects) */
+        if (getenv("UI") && pos >= RATE / 20) { ctl[idx("lfo_depth")] = 100; ctl[idx("lfo_rate")] = 4; }
         mid.seq.atom.type = seq_t; mid.seq.atom.size = sizeof(LV2_Atom_Sequence_Body);
         mid.seq.body.unit = 0; mid.seq.body.pad = 0;
         while (ei < nev && (uint32_t)(ev[ei].t * RATE) < pos + BLOCK) {

@@ -12,8 +12,8 @@ ruler=''.join(f'<line x1="{i}" y1="0" x2="{i}" y2="{3 if i%10==0 else 1.6}" stro
 ruler_svg=f'<svg width="106mm" height="8mm" viewBox="-2 -1 106 8">{ruler}<text x="0" y="6" font-size="2.2" font-family="Inter">0</text><text x="100" y="6" font-size="2.2" text-anchor="middle" font-family="Inter">100 mm</text></svg>'
 cal=f'''<div class="cal">{ruler_svg}
 <p><b>1. Check the print scale.</b> The bar above must measure exactly 100 mm (print at "actual size" / 100 %). On this mask the R1&ndash;R8 knob centres are 175 mm apart. Measure R1 to R8 on your PCR (centre to centre); if it differs, print again at <b>your measurement &divide; 175 &times; 100 %</b>.</p>
-<p><b>2. Cut</b> along the outer edges and the grey dashed lines (knob holes, windows for the buttons, display and sliders). The small card goes over L1&ndash;L3.</p>
-<p><b>Key:</b> black = KeySampler function; grey = control and the message the PCR sends (GM2 set, with L1-L3 set to CC 80-82 and saved as memory 1); orange = groups and Record. The window marked "PCR keyboard buttons" keeps its normal PCR functions.</p></div>'''
+<p><b>2. Cut</b> along the outer edges and the grey dashed lines (knob holes, windows for the buttons, display and sliders). The small card goes over L1&ndash;L3 (not used by KeySampler).</p>
+<p><b>Key:</b> black = KeySampler function; grey = control and the message the PCR sends (GM2 set, with L1-L3 set to CC 80-82 and saved as memory 1); orange = groups. The window marked "PCR keyboard buttons" keeps its normal PCR functions.</p></div>'''
 css='''@page { margin: 0; } body { margin:0; font-family: Inter, sans-serif; background:#fff; } svg text { font-family: Inter, sans-serif; }
 .pg { break-after: page; padding: 7mm 6mm 0; } .pg:last-child { break-after: auto; }
 .cal { margin: 3mm 0 0; font-size: 8.3pt; line-height: 1.4; max-width: 255mm; color:#222 } .cal p { margin: 1.2mm 0 }

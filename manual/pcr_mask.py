@@ -49,23 +49,23 @@ def mask_svg():
     # ---- L1-L3 card (not used by KeySampler)
     o.append(rrect(57, 140, 310, 262, 1.2))
     o.append(rrect(70, 175, 296, 228, 0.8, stroke=CUT, dash="1.2 0.8"))
-    for x, lab, cc, col in [(105, "RECORD", "L1 · CC 80", ACC), (183, "SAVE", "L2 · CC 81", INK), (262, "RESTORE", "L3 · CC 82", INK)]:
+    for x, lab, cc, col in [(105, "—", "L1 · CC 80", SOFT), (183, "—", "L2 · CC 81", SOFT), (262, "—", "L3 · CC 82", SOFT)]:
         o.append(text(X(x), Y(166), lab, 2.3, 800, fill=col))
         o.append(text(X(x), Y(240), cc, 1.7, 500, fill=SOFT))
-    o.append(text(X(183), Y(250), "set L1-L3 to CC 80-82 (latch), save as PCR memory 1", 1.45, 500, fill=SOFT))
+    o.append(text(X(183), Y(250), "not used · set to CC 80-82 so they don't stop the S2400", 1.45, 500, fill=SOFT))
     o.append(text(X(296), Y(257), "KeySampler", 1.6, 700, anchor="end", fill=ACC))
 
     # ---- main strip
     o.append(rrect(380, 28, 1925, 265, 3.0, w=0.45))
     # knob group labels
     o.append(group_label(395, 568, 40, "FILTER"))
-    o.append(group_label(580, 860, 40, "LFO (B4)"))
-    o.append(group_label(872, 1046, 40, "TUNE"))
+    o.append(group_label(580, 860, 40, "LFO · MODULATION (B4-B6)"))
+    o.append(group_label(872, 1046, 40, "GLIDE · TUNE"))
     for xb in (573, 866, 1053):
         o.append(f'<line x1="{X(xb):.2f}" y1="{Y(34):.2f}" x2="{X(xb):.2f}" y2="{Y(62):.2f}" stroke="{INK}" stroke-width="0.4"/>')
     knobs = [(433, "CUTOFF", "CC 74", "R1"), (527, "RESONANCE", "CC 71", "R2"), (621, "RATE", "CC 76", "R3"),
-             (714, "DEPTH", "CC 77", "R4"), (819, "DELAY", "CC 78", "R5"), (913, "COARSE", "RPN 0/2", "R6"),
-             (1006, "FINE", "RPN 0/1", "R7"), (1100, "PAN", "CC 10", "R8")]
+             (714, "DEPTH", "CC 77", "R4"), (819, "DELAY", "CC 78", "R5"), (913, "GLIDE MS", "RPN 0/2", "R6"),
+             (1006, "FINE TUNE", "RPN 0/1", "R7"), (1100, "PAN", "CC 10", "R8")]
     for k in knobs:
         o.append(knob(*k))
 
@@ -80,15 +80,17 @@ def mask_svg():
     # lower-middle window: B1-B6
     o.append(rrect(714, 181, 1136, 237, 0.8, stroke=CUT, dash="1.2 0.8"))
     btns = [(752, "FILTER", "Prog −", "B1"), (823, "MODE", "Prog +", "B2"), (890, "GLIDE", "CC 65", "B3"),
-            (960, "LFO TO", "CC 127", "B4"), (1030, "", "CC 126", "B5"), (1100, "VOL/FILT", "SysEx", "B6")]
+            (960, "PITCH MOD", "CC 127", "B4"), (1030, "FILT MOD", "CC 126", "B5"), (1100, "PAN MOD", "SysEx/CC 87", "B6")]
     for x, lab, cc, b in btns:
         if lab: o.append(text(X(x), Y(177), lab, 2.3, 800, fill=INK))
         o.append(text(X(x), Y(250), f"{b} · {cc}", 1.7, 500, fill=SOFT))
     o.append(text(X(752), Y(256.5), "Off›LP›BP›HP", 1.45, 500, fill=SOFT))
     o.append(text(X(823), Y(256.5), "1Sh›Gate›Loop›PP", 1.45, 500, fill=SOFT))
     o.append(text(X(890), Y(256.5), "on / off", 1.45, 500, fill=SOFT))
-    o.append(text(X(960), Y(256.5), "Pitch›Filt›Vol", 1.45, 500, fill=SOFT))
-    o.append(text(X(1100), Y(256.5), "S1-S4 envelope", 1.45, 500, fill=SOFT))
+    o.append(text(X(960), Y(256.5), "R3-R5 pitch LFO", 1.45, 500, fill=SOFT))
+    o.append(text(X(1030), Y(256.5), "LFO + S1-S4 env", 1.45, 500, fill=SOFT))
+    o.append(text(X(1100), Y(256.5), "R3-R5 pan LFO", 1.45, 500, fill=SOFT))
+    o.append(text(X(1030), Y(262.5), "B4-B6: same button again = back to volume", 1.45, 500, fill=SOFT))
 
     # display window
     o.append(rrect(1160, 107, 1335, 232, 0.8, stroke=CUT, dash="1.2 0.8"))
@@ -100,7 +102,7 @@ def mask_svg():
     # slider windows
     o.append(rrect(1360, 67, 1616, 233, 0.8, stroke=CUT, dash="1.2 0.8"))
     o.append(rrect(1640, 67, 1895, 233, 0.8, stroke=CUT, dash="1.2 0.8"))
-    o.append(group_label(1362, 1616, 37, "ENVELOPE · VOL / FILTER (B6)"))
+    o.append(group_label(1362, 1616, 37, "ENVELOPE · VOL / FILTER (MODULATION, B5)"))
     o.append(group_label(1640, 1830, 37, "SAMPLE"))
     o.append(f'<line x1="{X(1836):.2f}" y1="{Y(32):.2f}" x2="{X(1836):.2f}" y2="{Y(64):.2f}" stroke="{INK}" stroke-width="0.4"/>')
     sliders = [(1394, "ATTACK", "CC 5", "S1"), (1458, "DECAY", "A.Touch", "S2"), (1524, "SUSTAIN", "CC 73", "S3"),

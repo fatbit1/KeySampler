@@ -70,7 +70,7 @@ enum {
     P_OUT_R,
     P_IN_L,
     P_IN_R,
-    /* ---- shown in the S2400 menu (32) ---- */
+    /* ---- the menu (29) ---- */
     P_SAMPLE,
     P_RECORD,
     P_THRESH,
@@ -78,10 +78,6 @@ enum {
     P_LEVEL,
     P_ROOT,
     P_TUNE,
-    P_ATTACK,
-    P_DECAY,
-    P_SUSTAIN,
-    P_RELEASE,
     P_START_S,
     P_START_MS,
     P_LOOP_START_S,
@@ -89,35 +85,45 @@ enum {
     P_LOOP_END_S,
     P_LOOP_END_MS,
     P_FILTER,
+    P_GLIDE_MODE,
+    P_PAN,
+    P_VOICES,
+    P_MIDI_CH,        /* Omni, 1-16 */
+    P_VELSENS,
+    P_BEND,
+    P_START_SMP,
+    P_LOOP_START_SMP,
+    P_LOOP_END_SMP,
+    P_FENV_AMT,
+    P_MODULATION,     /* Volume / Filter / Pitch / Pan: where R3-R5 (and S1-S4 for Filter) go */
+    P_UI_RATE,        /* menu LFO Rate / Depth / Delay: show and edit the LFO Modulation selects */
+    P_UI_DEPTH,
+    P_UI_DELAY,
+    P_MENU_CMD,
+    /* ---- also visible (the S2400 shows the first 32) ---- */
     P_CUTOFF,
     P_RESO,
-    P_FENV_AMT,
+    P_GLIDE,
+    /* ---- hidden: saved with the project, set from the PCR ---- */
+    P_THRU,
+    P_FENV_ON,
+    P_ATTACK,
+    P_DECAY,
+    P_SUSTAIN,
+    P_RELEASE,
     P_FENV_A,
     P_FENV_D,
     P_FENV_S,
     P_FENV_R,
-    P_GLIDE_MODE,
-    P_GLIDE,
-    P_VIB_DEPTH,
-    P_VIB_RATE,
-    P_PAN,
-    P_VOICES,
-    P_MENU_CMD,
-    /* ---- beyond the S2400's 32: defaults, CC-controllable ---- */
-    P_THRU,
-    P_VELSENS,
-    P_BEND,
-    P_VIB_DELAY,
-    P_START_SMP,
-    P_LOOP_START_SMP,
-    P_LOOP_END_SMP,
-    P_FENV_ON,
     P_MENU_SYNC,
-    P_LFO_DEST,
-    P_SAMPLE_ID,      /* hidden: number of the recording "Sample" plays (0 = none) */
-    P_COUNT
+    P_SAMPLE_ID,      /* number of the recording "Sample" plays (0 = none) */
+    P_LFO_BASE,       /* 4 LFOs (volume, filter, pitch, pan) x depth, rate, delay */
+    P_LFO_END = P_LFO_BASE + 12,
+    P_COUNT = P_LFO_END
 };
 #define P_FIRST_CTL P_SAMPLE
+enum { LFO_VOL = 0, LFO_FLT, LFO_PIT, LFO_PAN, LFO_N };
+#define P_LFO(k, j) (P_LFO_BASE + (k) * 3 + (j))   /* j: 0 depth, 1 rate, 2 delay */
 
 /* ms and samples ports belonging to a point's "sec" port */
 static int point_ms(int p_s) { return p_s == P_START_S ? P_START_MS : p_s == P_LOOP_START_S ? P_LOOP_START_MS : P_LOOP_END_MS; }
@@ -126,17 +132,20 @@ static int point_smp(int p_s) { return p_s == P_START_S ? P_START_SMP : p_s == P
 /* Things a MIDI CC can control (also the "CC Learn" menu, in this order). */
 enum { T_NONE = 0, T_LEVEL, T_CUTOFF, T_RESO, T_ATTACK, T_DECAY, T_SUSTAIN, T_RELEASE, T_TUNE,
        T_START, T_LOOP_START, T_LOOP_END, T_SAMPLE, T_RECORD, T_FILTER, T_MODE,
-       T_PAN, T_VIB_RATE, T_VIB_DEPTH, T_VIB_DELAY, T_THRU, T_GLIDE_MODE, T_GLIDE,
+       T_PAN, T_VIB_RATE, T_VIB_DEPTH, T_VIB_DELAY, T_THRU, T_GLIDE_MODE, T_GLIDE, /* T_VIB_*: volume LFO */
        T_FENV_ON, T_FENV_AMT, T_FENV_A, T_FENV_D, T_FENV_S, T_FENV_R,
        T_SAVE, T_RESTORE, /* actions, not parameters */
-       T_LFO_DEST,
+       T_LFO_UNUSED,
        T_SAMPLE_ID,
+       T_LFO_X,              /* + (k - 1) * 3 + j: LFO k (filter, pitch, pan), j = depth, rate, delay */
+       T_MODPAGE = T_LFO_X + 9,  /* Modulation (B4-B6 change it like a knob changes its parameter) */
        T_COUNT,
        T_RESET = T_COUNT, T_SAVE_NOW, T_RESTORE_NOW }; /* CC Learn menu commands */
 static const int t_port[T_COUNT] = { -1, P_LEVEL, P_CUTOFF, P_RESO, P_ATTACK, P_DECAY, P_SUSTAIN,
     P_RELEASE, P_TUNE, P_START_S, P_LOOP_START_S, P_LOOP_END_S, P_SAMPLE, P_RECORD, P_FILTER, P_MODE,
-    P_PAN, P_VIB_RATE, P_VIB_DEPTH, P_VIB_DELAY, P_THRU, P_GLIDE_MODE, P_GLIDE,
-    P_FENV_ON, P_FENV_AMT, P_FENV_A, P_FENV_D, P_FENV_S, P_FENV_R, -1, -1, P_LFO_DEST, P_SAMPLE_ID };
+    P_PAN, P_LFO(0, 1), P_LFO(0, 0), P_LFO(0, 2), P_THRU, P_GLIDE_MODE, P_GLIDE,
+    P_FENV_ON, P_FENV_AMT, P_FENV_A, P_FENV_D, P_FENV_S, P_FENV_R, -1, -1, -1, P_SAMPLE_ID,
+    P_LFO(1, 1), P_LFO(1, 0), P_LFO(1, 2), P_LFO(2, 1), P_LFO(2, 0), P_LFO(2, 2), P_LFO(3, 1), P_LFO(3, 0), P_LFO(3, 2), P_MODULATION };
 
 #define CC_PRESSURE 128    /* channel aftertouch, handled like a 129th CC */
 #define CC_SLOTS 129
@@ -149,9 +158,9 @@ static const int t_port[T_COUNT] = { -1, P_LEVEL, P_CUTOFF, P_RESO, P_ATTACK, P_
 static const struct { int cc, t; } cc_defaults[] = {
     { 74, T_CUTOFF },     /* R1 FILTER CUTOFF */
     { 71, T_RESO },       /* R2 FILTER RESONANCE */
-    { 76, T_VIB_RATE },   /* R3 VIBRATO RATE */
-    { 77, T_VIB_DEPTH },  /* R4 VIBRATO DEPTH */
-    { 78, T_VIB_DELAY },  /* R5 VIBRATO DELAY */
+    { 76, T_VIB_RATE },   /* R3 LFO rate  (volume LFO, or the one B4/B5/B6 selected) */
+    { 77, T_VIB_DEPTH },  /* R4 LFO depth */
+    { 78, T_VIB_DELAY },  /* R5 LFO delay */
     { 10, T_PAN },        /* R8 PAN */
     /* S1-S4: Attack, Decay, Sustain, Release of the volume envelope, or of the
      * filter envelope after B6 (see handle_cc) */
@@ -246,6 +255,7 @@ typedef struct {
     float    lfo_cut; /* LFO -> cutoff offset (0..100 units) */
     float    lfo_amp; /* LFO -> volume factor (0..1) */
     float    lfo_prev_amp; /* last block's factor, ramped from to avoid zipper noise */
+    float    lfo_pan, lfo_prev_pan; /* pan LFO, -1..1, ramped the same way */
     double   pitch, target, glide_step; /* current / target note (semitones), glide speed per frame */
     double   phase;                     /* oscillator slots */
     /* per-voice filter + its envelope */
@@ -293,7 +303,10 @@ typedef struct {
     atomic_uint clock_ms, sync_last_ms, sync_first_ms;
     atomic_int sync_now;               /* explicit Save: send without waiting */
     unsigned action_ms;                /* debounce for Save/Restore controls */
-    int      fenv_page;                /* 1 = sliders S1-S4 control the filter envelope */
+    unsigned page_ms;
+    int      ui_page;                  /* section the menu LFO items show (-1 = not yet) */
+    float    ui_prev[3];               /* values they show (what we sent, or the user's edit) */
+    float    ui_raw[3];                /* port values last block, to notice changes */
     double   clock_frac;
     GrpcConn gc;
     int      sync_proc;                /* sushi processor id of this instance, -1 = unknown */
@@ -715,13 +728,13 @@ __attribute__((unused)) static void cc_map_load(KeySampler* s)
 static const char* const port_sym[P_COUNT] = {
     "events", "audio_out_l", "audio_out_r", "audio_in_l", "audio_in_r",
     "sample", "record", "threshold", "mode", "level", "root", "tune",
-    "attack", "decay", "sustain", "release",
     "start_sec", "start_msec", "loop_start_sec", "loop_start_msec", "loop_end_sec", "loop_end_msec",
-    "filter", "cutoff", "resonance",
-    "fenv_amount", "fenv_attack", "fenv_decay", "fenv_sustain", "fenv_release",
-    "glide_mode", "glide", "vib_depth", "vib_rate", "ks_pan", "voices", "save_restore",
-    "thru", "velsens", "bend", "vib_delay",
-    "start_smp", "loop_start_smp", "loop_end_smp", "fenv", "menu_sync", "lfo_dest", "sample_id",
+    "filter", "glide_mode", "ks_pan", "voices", "midi_ch", "velsens", "bend",
+    "start_smp", "loop_start_smp", "loop_end_smp", "fenv_amount", "modulation", "lfo_rate", "lfo_depth", "lfo_delay", "save_restore",
+    "cutoff", "resonance", "glide",
+    "thru", "fenv", "attack", "decay", "sustain", "release", "fenv_attack", "fenv_decay", "fenv_sustain", "fenv_release", "menu_sync", "sample_id",
+    "lfo_vol_depth", "lfo_vol_rate", "lfo_vol_delay", "lfo_flt_depth", "lfo_flt_rate", "lfo_flt_delay",
+    "lfo_pit_depth", "lfo_pit_rate", "lfo_pit_delay", "lfo_pan_depth", "lfo_pan_rate", "lfo_pan_delay",
 };
 
 static float port_raw(const KeySampler* s, int p);
@@ -921,6 +934,7 @@ static LV2_Handle instantiate(const LV2_Descriptor* d, double rate, const char* 
     atomic_init(&s->want_slot, 0);
     atomic_init(&s->rec_done, 0);
     s->own_slot = s->prev_own_slot = -1;
+    s->ui_page = -1;
     atomic_init(&s->want_is_num, 0);
     atomic_init(&s->adopt, 0);
     atomic_init(&s->del_req, 0);
@@ -996,7 +1010,12 @@ static float cc_scale(int t, float v)
     case T_FENV_D:  return v * v * 5000.f;
     case T_FENV_S:  return v;
     case T_FENV_R:  return v * v * 5000.f;
-    case T_LFO_DEST: return floorf(v * 2.999f);
+    }
+    if (t == T_MODPAGE) return floorf(v * 3.999f);
+    if (t >= T_LFO_X && t < T_LFO_X + 9) switch ((t - T_LFO_X) % 3) {
+    case 0: return 0.1f + v * v * 11.9f;   /* rate */
+    case 1: return v * 100.f;              /* depth */
+    default: return v * 2000.f;            /* delay */
     }
     return 0.f;
 }
@@ -1112,10 +1131,38 @@ static void set_override(KeySampler* s, int t, float v)
 }
 
 /* B5: write every value changed from a controller into the menu */
+/* LFO target j (0 rate, 1 depth, 2 delay) of section page (0 volume, 1 filter, 2 pitch, 3 pan) */
+static int lfo_target(int page, int j)
+{
+    return page == 0 ? T_VIB_RATE + j : T_LFO_X + (page - 1) * 3 + j;
+}
+static float lfo_norm(int j, float x) /* inverse of cc_scale for the LFO targets */
+{
+    float v = j == 0 ? sqrtf(fmaxf(0.f, (x - 0.1f) / 11.9f)) : j == 1 ? x / 100.f : x / 2000.f;
+    return v < 0 ? 0 : v > 1 ? 1 : v;
+}
+static const int ui_port[3] = { P_UI_RATE, P_UI_DEPTH, P_UI_DELAY };
+/* menu LFO items: show the values of the LFO Modulation selects */
+static void ui_show(KeySampler* s, int page)
+{
+    unsigned long long bits = 0;
+    for (int j = 0; j < 3; ++j) {
+        int t = lfo_target(page, j);
+        float v = ctl(s, t_port[t], 0, -1e9f, 1e9f);
+        s->sync_val[ui_port[j]] = v;
+        s->ui_prev[j] = v;           /* the echo from the menu is not an edit */
+        bits |= 1ULL << ui_port[j];
+    }
+    s->ui_page = page;
+    atomic_fetch_or(&s->sync_dirty, bits);
+    atomic_store(&s->sync_now, 1);
+}
+
 static void save_to_menu(KeySampler* s)
 {
     for (int t = 1; t < T_COUNT; ++t)
         if (t_port[t] >= 0 && s->ov_on[t]) queue_sync(s, t);
+    if (s->ui_page >= 0) ui_show(s, s->ui_page);
     atomic_store(&s->sync_now, 1);
 }
 
@@ -1128,6 +1175,7 @@ static void defaults_to_menu(KeySampler* s)
     unsigned long long bits = 0;
     for (int p = P_FIRST_CTL; p < P_COUNT; ++p) {
         if (p == P_SAMPLE || p == P_SAMPLE_ID || p == P_RECORD || p == P_MENU_CMD) continue;
+        if (p == P_UI_RATE || p == P_UI_DEPTH || p == P_UI_DELAY) s->ui_prev[p - P_UI_RATE] = port_default[p];
         s->sync_val[p] = port_default[p];
         bits |= 1ULL << p;
     }
@@ -1170,8 +1218,11 @@ static void handle_cc(KeySampler* s, int cc, int val)
         return;
     }
     if (t == T_TUNE) s->tune_is_rpn = 0;
-    if (s->fenv_page) /* B6 switched S1-S4 to the filter envelope */
+    int page = ictl(s, P_MODULATION, 0, 0, 3);
+    if (page == LFO_FLT) /* Modulation = Filter: S1-S4 set the filter envelope */
         t = t == T_ATTACK ? T_FENV_A : t == T_DECAY ? T_FENV_D : t == T_SUSTAIN ? T_FENV_S : t == T_RELEASE ? T_FENV_R : t;
+    if (page && (t == T_VIB_RATE || t == T_VIB_DEPTH || t == T_VIB_DELAY)) /* R3-R5 -> the selected LFO */
+        t = T_LFO_X + (page - 1) * 3 + (t - T_VIB_RATE);
     set_override(s, t, val / 127.f);
 }
 
@@ -1186,15 +1237,15 @@ static void cycle_mode(KeySampler* s)
     int m = ((int)(ctl(s, P_MODE, 1, 0, 3) + 0.5f) + 1) % 4;   /* One Shot > Gate > Loop > Ping-Pong */
     set_override(s, T_MODE, (m + 0.5f) / 4.f);
 }
-static void toggle_record(KeySampler* s)
+/* B4 pitch, B5 filter, B6 pan: R3-R5 (and, for B5, S1-S4) now set that section.
+ * The same button again goes back to volume; another button switches. */
+static void select_page(KeySampler* s, int page)
 {
-    set_override(s, T_RECORD, ictl(s, P_RECORD, 0, 0, 1) == 1 ? 0.f : 1.f);
-}
-/* B4: the LFO (R3-R5) moves the pitch (vibrato), the filter cutoff or the volume (tremolo) */
-static void toggle_lfo_dest(KeySampler* s)
-{
-    int d = ((int)(ctl(s, P_LFO_DEST, 0, 0, 2) + 0.5f) + 1) % 3;
-    set_override(s, T_LFO_DEST, (d + 0.5f) / 3.f);
+    unsigned now = atomic_load(&s->clock_ms);
+    if (s->page_ms && now - s->page_ms < 150) return;   /* one press can arrive twice */
+    s->page_ms = now ? now : 1;
+    int cur = ictl(s, P_MODULATION, 0, 0, 3), next = cur == page ? LFO_VOL : page;
+    set_override(s, T_MODPAGE, (next + 0.5f) / 4.f);
 }
 
 static void toggle_glide(KeySampler* s)
@@ -1205,11 +1256,12 @@ static void toggle_glide(KeySampler* s)
     set_override(s, T_GLIDE_MODE, (next + 0.5f) / 3.f);
 }
 
-/* RPN: CC101/100 select, CC6/38 data. 0/2 = coarse tune, 0/1 = fine tune (PCR R6/R7) */
+/* RPN: CC101/100 select, CC6/38 data. R6 sends 0/2 (coarse tune): Glide ms. R7 sends 0/1: fine tune. */
 static void handle_rpn_data(KeySampler* s, int cc, int val)
 {
-    if (s->rpn == 2 && cc == 6) s->rpn_coarse = (float)(val - 64);
-    else if (s->rpn == 1 && cc == 6) { s->rpn_fine_msb = val; s->rpn_fine = ((val << 7) - 8192) / 8192.f * 100.f; }
+    if (s->rpn == 2 && cc == 6) { set_override(s, T_GLIDE, val / 127.f); return; } /* R6 = Glide ms */
+    if (!s->tune_is_rpn) s->rpn_coarse = s->ctl[P_TUNE] ? *s->ctl[P_TUNE] : 0.f;  /* R7 fine-tunes around the menu Tune */
+    if (s->rpn == 1 && cc == 6) { s->rpn_fine_msb = val; s->rpn_fine = ((val << 7) - 8192) / 8192.f * 100.f; }
     else if (s->rpn == 1 && cc == 38) s->rpn_fine = (((s->rpn_fine_msb << 7) | val) - 8192) / 8192.f * 100.f;
     else return;
     s->tune_is_rpn = 1;
@@ -1324,6 +1376,7 @@ static void note_on(KeySampler* s, int note, int vel)
     }
     v->rev = 0;
     v->lfo_amp = v->lfo_prev_amp = 1.f;
+    v->lfo_pan = v->lfo_prev_pan = 0.f;
     v->phase = 0;
     memset(v->lad, 0, sizeof v->lad);
     v->fenv = 0.f;
@@ -1363,6 +1416,8 @@ static void handle_midi(KeySampler* s, const uint8_t* m, uint32_t size)
 {
     if (size < 1) return;
     uint8_t st = m[0] & 0xF0;
+    int ch = ictl(s, P_MIDI_CH, 0, 0, 16);        /* 0 = Omni */
+    if (st >= 0x80 && st <= 0xE0 && ch && (m[0] & 0x0F) != ch - 1) return;
     if (st == 0x90 && size >= 3 && m[2] > 0) note_on(s, m[1], m[2]);
     else if ((st == 0x80 || st == 0x90) && size >= 3) note_off(s, m[1]);
     else if (st == 0xE0 && size >= 3) s->bend = (((m[2] << 7) | m[1]) - 8192) / 8192.f;
@@ -1383,16 +1438,10 @@ static void handle_midi(KeySampler* s, const uint8_t* m, uint32_t size)
         } else if (m[1] == 6 || m[1] == 38) { handle_rpn_data(s, m[1], m[2]);
         } else if (m[1] == 11) { s->expr = m[2] / 127.f;              /* P2 expression */
         } else if (m[1] == 65) { toggle_glide(s);                     /* B3 "portamento on/off" */
-        } else if (m[1] == 127) { toggle_lfo_dest(s);                 /* B4 "poly mode on": LFO -> pitch / filter */
-        } else if (m[1] == 126) {                                      /* B5: not used */
-        } else if (m[1] >= 80 && m[1] <= 82) {                         /* L1-L3, set on the PCR to CC 80-82 */
-            if (m[2] >= 64) {                                          /* press (latch mode: 127 down, 0 up) */
-                unsigned now = atomic_load(&s->clock_ms);
-                if (now - s->action_ms >= 200) {
-                    s->action_ms = now;
-                    if (m[1] == 80) toggle_record(s); else if (m[1] == 81) save_to_menu(s); else restore_menu(s);
-                }
-            }
+        } else if (m[1] == 127) { select_page(s, LFO_PIT);            /* B4 "poly mode on": pitch LFO */
+        } else if (m[1] == 126) { select_page(s, LFO_FLT);            /* B5 "mono mode on": filter LFO + envelope */
+        } else if (m[1] >= 85 && m[1] <= 87) {                         /* B4-B6 re-set on the PCR to CC 85-87 */
+            if (m[2] >= 64) select_page(s, m[1] == 85 ? LFO_PIT : m[1] == 86 ? LFO_FLT : LFO_PAN);
         } else if (m[1] < 120 && m[1] != 98 && m[1] != 99) {
             handle_cc(s, m[1], m[2] & 0x7F);
         }
@@ -1407,7 +1456,7 @@ static void handle_midi(KeySampler* s, const uint8_t* m, uint32_t size)
         if (dir < 0) cycle_filter(s);    /* B1 */
         else cycle_mode(s);              /* B2 */
     } else if (m[0] == 0xF0 && size >= 6 && m[1] == 0x7E && m[3] == 0x09 && m[4] == 0x03) {
-        s->fenv_page = !s->fenv_page;  /* B6 "GM2 system on": S1-S4 volume <-> filter envelope */
+        select_page(s, LFO_PAN);       /* B6 "GM2 system on": pan LFO */
     }
 }
 
@@ -1463,10 +1512,12 @@ static void render(KeySampler* s, uint32_t from, uint32_t to)
     float sus = ctl(s, P_SUSTAIN, 1, 0, 1);
     int mode = ictl(s, P_MODE, MODE_GATE, 0, 3);
     if (osc >= 0) mode = MODE_GATE; /* oscillators always sustain while held */
-    float vib_rate = ctl(s, P_VIB_RATE, 5, 0.1f, 12);
-    float vib_depth = ctl(s, P_VIB_DEPTH, 0, 0, 100);
-    double vib_delay = ctl(s, P_VIB_DELAY, 0, 0, 2000) / 1000.0;
-    int lfo_dest = (int)(ctl(s, P_LFO_DEST, 0, 0, 2) + 0.5f); /* 0 pitch, 1 filter, 2 volume */
+    float lfo_depth[LFO_N], lfo_rate[LFO_N]; double lfo_delay[LFO_N]; /* volume, filter, pitch, pan */
+    for (int k = 0; k < LFO_N; ++k) {
+        lfo_depth[k] = ctl(s, P_LFO(k, 0), 0, 0, 100);
+        lfo_rate[k] = ctl(s, P_LFO(k, 1), 5, 0.1f, 12);
+        lfo_delay[k] = ctl(s, P_LFO(k, 2), 0, 0, 2000) / 1000.0;
+    }
 
     /* filter: per voice, cutoff = smoothed Cutoff + envelope x Amount */
     int ftype = (int)(ctl(s, P_FILTER, 0, 0, 3) + 0.5f);
@@ -1511,16 +1562,16 @@ static void render(KeySampler* s, uint32_t from, uint32_t to)
             else v->pitch += v->target > v->pitch ? d : -d;
         }
         double semis = v->pitch - root + tune + s->bend * bend_r;
-        v->lfo_cut = 0.f; v->lfo_amp = 1.f;
-        if (vib_depth > 0.f) { /* LFO: fades in over 200 ms after the delay */
-            double t = v->vib_t / s->rate - vib_delay;
-            if (t > 0) {
-                double fade = t < 0.2 ? t / 0.2 : 1.0;
-                double w = fade * sin(2 * M_PI * vib_rate * t);
-                if (lfo_dest == 1) v->lfo_cut = (float)(vib_depth * 0.3 * w);  /* depth 100 = +-30 units = +-3 octaves */
-                else if (lfo_dest == 2) v->lfo_amp = (float)(1.0 - vib_depth / 100.0 * 0.5 * (1.0 - w)); /* 100 = full tremolo */
-                else semis += vib_depth / 100.0 * w;                        /* depth 100 = +-100 cents */
-            }
+        v->lfo_cut = 0.f; v->lfo_amp = 1.f; v->lfo_pan = 0.f;
+        for (int k = 0; k < LFO_N; ++k) { /* each LFO fades in over 200 ms after its delay */
+            if (lfo_depth[k] <= 0.f) continue;
+            double t = v->vib_t / s->rate - lfo_delay[k];
+            if (t <= 0) continue;
+            double w = (t < 0.2 ? t / 0.2 : 1.0) * sin(2 * M_PI * lfo_rate[k] * t), d = lfo_depth[k] / 100.0;
+            if (k == LFO_VOL) v->lfo_amp = (float)(1.0 - d * 0.5 * (1.0 - w)); /* 100 = full tremolo */
+            else if (k == LFO_FLT) v->lfo_cut = (float)(d * 30.0 * w);       /* 100 = +-30 units = +-3 octaves */
+            else if (k == LFO_PIT) semis += d * w;                            /* 100 = +-100 cents */
+            else v->lfo_pan = (float)(d * w);                                 /* 100 = full left to full right */
         }
         v->vib_t += to - from;
         double ratio = pow(2.0, semis / 12.0);
@@ -1534,7 +1585,9 @@ static void render(KeySampler* s, uint32_t from, uint32_t to)
         }
         float d_step = (1.f - sus) * ms_to_step(d_ms, s->rate);
         float g = level * v->vel_gain;
-        float amp0 = v->lfo_prev_amp, amp_step = (v->lfo_amp - amp0) / (float)(to - from > 0 ? to - from : 1);
+        float nblk = (float)(to - from > 0 ? to - from : 1);
+        float amp0 = v->lfo_prev_amp, amp_step = (v->lfo_amp - amp0) / nblk;
+        float pan0 = v->lfo_prev_pan, pan_step = (v->lfo_pan - pan0) / nblk;
 
         for (uint32_t n = from; n < to; ++n) {
             switch (v->stage) {
@@ -1605,10 +1658,12 @@ static void render(KeySampler* s, uint32_t from, uint32_t to)
                 xr = mono_src ? xl : ladder(xr * fdrive, v->lad[1], v->fa1, v->fa2, fk, ftype);
             }
             float e = v->env * g * amp0; amp0 += amp_step;
-            s->v_l[n - s->v_base] += xl * e;
-            s->v_r[n - s->v_base] += xr * e;
+            float pl = pan0 > 0 ? 1.f - pan0 : 1.f, pr = pan0 < 0 ? 1.f + pan0 : 1.f; pan0 += pan_step;
+            s->v_l[n - s->v_base] += xl * e * pl;
+            s->v_r[n - s->v_base] += xr * e * pr;
         }
         v->lfo_prev_amp = v->lfo_amp;
+        v->lfo_prev_pan = v->lfo_pan;
     }
 }
 
@@ -1765,6 +1820,27 @@ static void run(LV2_Handle h, uint32_t nframes)
     }
     for (int t = 1; t < T_COUNT; ++t)
         if (t_port[t] >= 0 && s->ov_on[t] && target_snapshot(s, t) != s->ov_snap[t]) s->ov_on[t] = 0;
+    {   /* menu LFO Rate / Depth / Delay act on the LFO that Modulation selects */
+        int page = ictl(s, P_MODULATION, 0, 0, 3);
+        if (s->ui_page < 0) {                       /* start: values from the project */
+            s->ui_page = page;
+            for (int j = 0; j < 3; ++j) s->ui_prev[j] = s->ui_raw[j] = port_raw(s, ui_port[j]);
+        } else if (page != s->ui_page) {
+            ui_show(s, page);
+        } else {
+            for (int j = 0; j < 3; ++j) {
+                float v = port_raw(s, ui_port[j]);
+                if (v == s->ui_raw[j]) continue;
+                s->ui_raw[j] = v;
+                if (fabsf(v - s->ui_prev[j]) <= 1e-3f * (1.f + fabsf(v))) continue; /* our own value coming back */
+                s->ui_prev[j] = v;                  /* edited in the menu: write it to that LFO */
+                int t = lfo_target(page, j);
+                set_override(s, t, lfo_norm(j, v));
+                queue_sync(s, t);
+                atomic_store(&s->sync_now, 1);
+            }
+        }
+    }
 
     {   /* a recording just finished: play it, and write its number into the menu */
         int done = atomic_exchange(&s->rec_done, 0);

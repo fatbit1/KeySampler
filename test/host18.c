@@ -1,7 +1,8 @@
 /* Save/Restore item test. CMDS = "time:value,..." sets the item over time (values hold
  * until the next entry) on the item ITEM (default save_restore = Changes); plays Sample $SAMPLE at 0.2 s and 3.6 s.
  * SEQ = "time:value,..." changes Sound the same way.
- * usage: host18 <plugin-uri> <out.wav>   env SAMPLE, SAMPLE_ID, CMDS, ITEM, SEQ */
+ * MIDI = "t:b0 4a 7f;..." adds raw MIDI messages (hex bytes). SET = "t:symbol:value,..." sets any port.
+ * usage: host18 <plugin-uri> <out.wav>   env SAMPLE, SAMPLE_ID, CMDS, ITEM, SEQ, MIDI */
 #include <lilv/lilv.h>
 #include <lv2/atom/atom.h>
 #include <lv2/atom/util.h>
@@ -58,8 +59,17 @@ int main(int argc, char** argv) {
 
     #define ON2(t,n) { t, 3, { 0x90, n, 127 } }
     #define OFF2(t,n) { t, 3, { 0x80, n, 0 } }
-    Ev ev[] = { ON2(0.20, 60), OFF2(0.60, 60), ON2(3.60, 60), OFF2(3.90, 60) };
-    int nev = sizeof ev / sizeof ev[0], ei = 0;
+    Ev ev[64] = { ON2(0.20, 60), OFF2(0.60, 60), ON2(3.60, 60), OFF2(3.90, 60) };
+    int nev = 4, ei = 0;
+    /* MIDI="t:hex hex hex;...": extra raw messages (sorted in with the notes) */
+    for (const char* c = getenv("MIDI"); c && *c && nev < 64; ) {
+        Ev e = { 0 }; int used = 0;
+        if (sscanf(c, "%lf:%n", &e.t, &used) != 1) break;
+        c += used;
+        unsigned b; while (*c && *c != ';' && sscanf(c, "%x%n", &b, &used) == 1) { e.m[e.n++] = (uint8_t)b; c += used; while (*c == ' ') ++c; }
+        int k = nev++; while (k > 0 && ev[k - 1].t > e.t) { ev[k] = ev[k - 1]; --k; } ev[k] = e;
+        if (*c == ';') ++c;
+    }
     LV2_URID midi_t = map_uri(NULL, LV2_MIDI__MidiEvent), seq_t = map_uri(NULL, LV2_ATOM__Sequence);
     uint32_t total = (uint32_t)(RATE * 4.1);
     int16_t* out = calloc(total * 2, 2);
@@ -79,6 +89,10 @@ int main(int argc, char** argv) {
           while (c && *c) { double t0; float v0; if (sscanf(c, "%lf:%f", &t0, &v0) != 2) break;
             if (tt >= t0) v = v0; c = strchr(c, ','); if (c) ++c; }
           ctl[idx(getenv("ITEM") ? getenv("ITEM") : "save_restore")] = v; }
+        if (getenv("SET")) { double tt = (double)pos / RATE; const char* c = getenv("SET"); /* "t:symbol:value,..." */
+          while (c && *c) { double t0; float v0; char sym[48]; int used = 0;
+            if (sscanf(c, "%lf:%47[^:]:%f%n", &t0, sym, &v0, &used) != 3) break;
+            if (tt >= t0) ctl[idx(sym)] = v0; c += used; if (*c == ',') ++c; } }
         if (getenv("SEQ")) { double tt = (double)pos / RATE; float v = -1; const char* c = getenv("SEQ"); /* Sound over time */
           while (c && *c) { double t0; float v0; if (sscanf(c, "%lf:%f", &t0, &v0) != 2) break;
             if (tt >= t0) v = v0; c = strchr(c, ','); if (c) ++c; }
