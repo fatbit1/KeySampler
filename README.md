@@ -28,12 +28,18 @@ saved on the S2400 itself.
 
 ## Install
 
-1. Download `keysampler-dspcard.zip` from the [Releases](../../releases) page, or build it (below).
-2. Copy the `dspcard` folder to the root of the S2400's SD card (merge with an existing one).
-   The plugin must end up at `SD:/dspcard/plugins/lv2/keysampler.lv2/` (next to your other DSP plugins).
+The folder [`sdcard/`](sdcard/) holds the current build, laid out exactly as it goes on the SD card.
+
+1. Download the repository (**Code → Download ZIP**) and unzip it.
+2. Copy the `dspcard` folder from inside `sdcard/` to the root of the S2400's SD card (merge it with
+   the one already there). The plugin must end up at `SD:/dspcard/plugins/lv2/keysampler.lv2/`,
+   next to your other DSP plugins. On a Mac, remove the `._` files afterwards:
+   `dot_clean /Volumes/<SD card name>`.
 3. On the S2400 run **Sync Files** (DSP settings), then **power-cycle** the S2400 —
    plugins are scanned at start-up.
-4. In the DSP Mixer load **KeySampler** on bus 1.
+4. In the DSP Mixer load **KeySampler** on a bus.
+
+To add your own WAVs, create a `samples` folder inside `keysampler.lv2` (see the manual).
 
 Everything else — recording, sample numbers, the PCR-M30 layout, the MIDI
 implementation chart — is in the [manual](manual/KeySampler_Manual.pdf). A printable
@@ -46,7 +52,7 @@ Requirements: Python 3 and [zig](https://ziglang.org) via `pip install ziglang`
 
 ```sh
 python3 src/gen_ttl.py   # regenerates src/keysampler.ttl from the control list
-sh build.sh              # -> build/dspcard/plugins/lv2/keysampler.lv2/
+sh build.sh              # -> build/dspcard/... and the copy in sdcard/dspcard/...
 ```
 
 zig targets glibc 2.17 so the library loads on the DSP Card (glibc 2.37). Distribution

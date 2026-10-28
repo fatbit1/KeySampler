@@ -30,3 +30,9 @@ cp build/aarch64/keysampler.so $B/keysampler.so
 cp src/keysampler.ttl $B/keysampler.ttl
 cp src/manifest.ttl $B/
 echo "bundle: $B"
+
+# the same files, kept in the repository: sdcard/ is ready to copy to the S2400's SD card
+S=sdcard/dspcard/plugins/lv2/keysampler.lv2
+mkdir -p $S
+cp $B/keysampler.so $B/keysampler.ttl $B/manifest.ttl $S/
+echo "sd card copy: $S"
