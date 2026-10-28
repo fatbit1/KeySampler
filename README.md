@@ -16,7 +16,7 @@ saved on the S2400 itself.
   unique number (1–9999) that is saved with the S2400 project, so each project gets its own sounds back.
   The **Sound** menu reads Sine / Triangle / Square / Saw / **Sample** (this instance's own recording),
   then 1–9999 to pick or delete any recording by number
-- 16 voices, ADSR, velocity, pitch bend, sustain pedal, expression
+- Up to 16 voices (8 by default), ADSR, velocity, pitch bend, sustain pedal, expression
 - One Shot / Gate / Loop / Ping-Pong modes; start and loop points in the S2400's own `sec : ms + smp` format
 - Moog-style 24 dB/oct ladder filter (low / band / high pass) with drive, self-oscillating resonance and its own ADSR
 - Portamento and legato glide; four LFOs with delay (volume, filter, pitch, pan); pan

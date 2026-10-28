@@ -15,7 +15,7 @@
         foaf:name "KeySampler" ;
     ] ;
     doap:license "MIT" ;
-    lv2:minorVersion 40 ;
+    lv2:minorVersion 41 ;
     lv2:microVersion 0 ;
     rdfs:comment "Records the bus input into slots and plays it chromatically from a MIDI keyboard." ;
     lv2:requiredFeature urid:map ;
@@ -10132,66 +10132,6 @@
     [
         a lv2:InputPort, lv2:ControlPort ;
         lv2:index 12 ;
-        lv2:symbol "start_sec" ;
-        lv2:name "Start sec" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 59 ;
-        lv2:portProperty lv2:integer ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 13 ;
-        lv2:symbol "start_msec" ;
-        lv2:name "Start ms" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 999 ;
-        lv2:portProperty lv2:integer ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 14 ;
-        lv2:symbol "loop_start_sec" ;
-        lv2:name "Loop Start sec" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 59 ;
-        lv2:portProperty lv2:integer ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 15 ;
-        lv2:symbol "loop_start_msec" ;
-        lv2:name "Loop Start ms" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 999 ;
-        lv2:portProperty lv2:integer ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 16 ;
-        lv2:symbol "loop_end_sec" ;
-        lv2:name "Loop End sec" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 59 ;
-        lv2:portProperty lv2:integer ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 17 ;
-        lv2:symbol "loop_end_msec" ;
-        lv2:name "Loop End ms" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 999 ;
-        lv2:portProperty lv2:integer ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 18 ;
         lv2:symbol "filter" ;
         lv2:name "Filter" ;
         lv2:default 0 ;
@@ -10205,7 +10145,34 @@
     ] ,
     [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 19 ;
+        lv2:index 13 ;
+        lv2:symbol "cutoff" ;
+        lv2:name "Cutoff" ;
+        lv2:default 100.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 100.0 ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 14 ;
+        lv2:symbol "resonance" ;
+        lv2:name "Resonance" ;
+        lv2:default 0.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 1.0 ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 15 ;
+        lv2:symbol "fenv_amount" ;
+        lv2:name "F.Env Amount" ;
+        lv2:default 0.0 ;
+        lv2:minimum -100.0 ;
+        lv2:maximum 100.0 ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 16 ;
         lv2:symbol "glide_mode" ;
         lv2:name "Glide Mode" ;
         lv2:default 0 ;
@@ -10218,7 +10185,16 @@
     ] ,
     [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 20 ;
+        lv2:index 17 ;
+        lv2:symbol "glide" ;
+        lv2:name "Glide ms" ;
+        lv2:default 100.0 ;
+        lv2:minimum 0.0 ;
+        lv2:maximum 2000.0 ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 18 ;
         lv2:symbol "ks_pan" ;
         lv2:name "Pan" ;
         lv2:default 0.0 ;
@@ -10227,17 +10203,17 @@
     ] ,
     [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 21 ;
+        lv2:index 19 ;
         lv2:symbol "voices" ;
         lv2:name "Voices" ;
-        lv2:default 16 ;
+        lv2:default 8 ;
         lv2:minimum 1 ;
         lv2:maximum 16 ;
         lv2:portProperty lv2:integer ;
     ] ,
     [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 22 ;
+        lv2:index 20 ;
         lv2:symbol "midi_ch" ;
         lv2:name "MIDI Channel" ;
         lv2:default 0 ;
@@ -10264,7 +10240,7 @@
     ] ,
     [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 23 ;
+        lv2:index 21 ;
         lv2:symbol "velsens" ;
         lv2:name "Vel Sens" ;
         lv2:default 1.0 ;
@@ -10273,7 +10249,7 @@
     ] ,
     [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 24 ;
+        lv2:index 22 ;
         lv2:symbol "bend" ;
         lv2:name "Bend Range" ;
         lv2:default 2 ;
@@ -10283,87 +10259,7 @@
     ] ,
     [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 25 ;
-        lv2:symbol "start_smp" ;
-        lv2:name "Start smp" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 95 ;
-        lv2:portProperty lv2:integer ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 26 ;
-        lv2:symbol "loop_start_smp" ;
-        lv2:name "Loop Start smp" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 95 ;
-        lv2:portProperty lv2:integer ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 27 ;
-        lv2:symbol "loop_end_smp" ;
-        lv2:name "Loop End smp" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 95 ;
-        lv2:portProperty lv2:integer ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 28 ;
-        lv2:symbol "fenv_amount" ;
-        lv2:name "F.Env Amount" ;
-        lv2:default 0.0 ;
-        lv2:minimum -100.0 ;
-        lv2:maximum 100.0 ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 29 ;
-        lv2:symbol "modulation" ;
-        lv2:name "Modulation" ;
-        lv2:default 0 ;
-        lv2:minimum 0 ;
-        lv2:maximum 3 ;
-        lv2:portProperty lv2:integer, lv2:enumeration ;
-        lv2:scalePoint [ rdfs:label "Volume" ; rdf:value 0 ] ,
-                       [ rdfs:label "Filter" ; rdf:value 1 ] ,
-                       [ rdfs:label "Pitch" ; rdf:value 2 ] ,
-                       [ rdfs:label "Pan" ; rdf:value 3 ] ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 30 ;
-        lv2:symbol "lfo_rate" ;
-        lv2:name "LFO Rate Hz" ;
-        lv2:default 5.0 ;
-        lv2:minimum 0.1 ;
-        lv2:maximum 12.0 ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 31 ;
-        lv2:symbol "lfo_depth" ;
-        lv2:name "LFO Depth" ;
-        lv2:default 0.0 ;
-        lv2:minimum 0.0 ;
-        lv2:maximum 100.0 ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 32 ;
-        lv2:symbol "lfo_delay" ;
-        lv2:name "LFO Delay ms" ;
-        lv2:default 0.0 ;
-        lv2:minimum 0.0 ;
-        lv2:maximum 2000.0 ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 33 ;
+        lv2:index 23 ;
         lv2:symbol "save_restore" ;
         lv2:name "Changes" ;
         lv2:default 0 ;
@@ -10378,28 +10274,132 @@
     ] ,
     [
         a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 24 ;
+        lv2:symbol "start_sec" ;
+        lv2:name "Start sec" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 59 ;
+        lv2:portProperty lv2:integer ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 25 ;
+        lv2:symbol "start_msec" ;
+        lv2:name "Start ms" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 999 ;
+        lv2:portProperty lv2:integer ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 26 ;
+        lv2:symbol "start_smp" ;
+        lv2:name "Start smp" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 95 ;
+        lv2:portProperty lv2:integer ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 27 ;
+        lv2:symbol "loop_start_sec" ;
+        lv2:name "Loop Start sec" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 59 ;
+        lv2:portProperty lv2:integer ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 28 ;
+        lv2:symbol "loop_start_msec" ;
+        lv2:name "Loop Start ms" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 999 ;
+        lv2:portProperty lv2:integer ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 29 ;
+        lv2:symbol "loop_start_smp" ;
+        lv2:name "Loop Start smp" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 95 ;
+        lv2:portProperty lv2:integer ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 30 ;
+        lv2:symbol "loop_end_sec" ;
+        lv2:name "Loop End sec" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 59 ;
+        lv2:portProperty lv2:integer ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 31 ;
+        lv2:symbol "loop_end_msec" ;
+        lv2:name "Loop End ms" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 999 ;
+        lv2:portProperty lv2:integer ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 32 ;
+        lv2:symbol "loop_end_smp" ;
+        lv2:name "Loop End smp" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 95 ;
+        lv2:portProperty lv2:integer ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 33 ;
+        lv2:symbol "modulation" ;
+        lv2:name "Modulation" ;
+        lv2:default 0 ;
+        lv2:minimum 0 ;
+        lv2:maximum 3 ;
+        lv2:portProperty lv2:integer, lv2:enumeration ;
+        lv2:scalePoint [ rdfs:label "Volume" ; rdf:value 0 ] ,
+                       [ rdfs:label "Filter" ; rdf:value 1 ] ,
+                       [ rdfs:label "Pitch" ; rdf:value 2 ] ,
+                       [ rdfs:label "Pan" ; rdf:value 3 ] ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
         lv2:index 34 ;
-        lv2:symbol "cutoff" ;
-        lv2:name "Cutoff" ;
-        lv2:default 100.0 ;
+        lv2:symbol "lfo_rate" ;
+        lv2:name "LFO Rate Hz" ;
+        lv2:default 5.0 ;
+        lv2:minimum 0.1 ;
+        lv2:maximum 12.0 ;
+    ] ,
+    [
+        a lv2:InputPort, lv2:ControlPort ;
+        lv2:index 35 ;
+        lv2:symbol "lfo_depth" ;
+        lv2:name "LFO Depth" ;
+        lv2:default 0.0 ;
         lv2:minimum 0.0 ;
         lv2:maximum 100.0 ;
     ] ,
     [
         a lv2:InputPort, lv2:ControlPort ;
-        lv2:index 35 ;
-        lv2:symbol "resonance" ;
-        lv2:name "Resonance" ;
-        lv2:default 0.0 ;
-        lv2:minimum 0.0 ;
-        lv2:maximum 1.0 ;
-    ] ,
-    [
-        a lv2:InputPort, lv2:ControlPort ;
         lv2:index 36 ;
-        lv2:symbol "glide" ;
-        lv2:name "Glide ms" ;
-        lv2:default 100.0 ;
+        lv2:symbol "lfo_delay" ;
+        lv2:name "LFO Delay ms" ;
+        lv2:default 0.0 ;
         lv2:minimum 0.0 ;
         lv2:maximum 2000.0 ;
     ] ,

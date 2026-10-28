@@ -67,7 +67,7 @@
     <div class="sub">Record a sound from the S2400 into a DSP bus and play it chromatically from a MIDI keyboard.</div>
     <div class="bar"></div>
     <table class="meta">
-      <tr><td>Plugin version</td><td>0.40 (LV2 minor version 40)</td></tr>
+      <tr><td>Plugin version</td><td>0.41 (LV2 minor version 41)</td></tr>
       <tr><td>Built for</td><td>S2400 DSP Card firmware 3.1.12</td></tr>
       <tr><td>Controller preset</td><td>Edirol PCR-M30/M50/M80, GM2 set (memory 0)</td></tr>
       <tr><td>Manual date</td><td>25 October 2026</td></tr>
@@ -104,7 +104,7 @@
 <ul>
   <li>Records the bus input; starts automatically when sound arrives, stops after 0.4 s of silence (max 30 s)</li>
   <li>Every recording gets its own number (1&ndash;9999), saved with the S2400 project</li>
-  <li>16-voice polyphony, velocity, pitch bend, sustain pedal, portamento and legato glide</li>
+  <li>Up to 16 voices (8 by default), velocity, pitch bend, sustain pedal, portamento and legato glide</li>
   <li>One Shot, Gate, Loop and Ping-Pong play modes with start and loop points in the S2400's own time format</li>
   <li>ADSR envelope</li>
   <li>Built-in sine, triangle, square and sawtooth oscillators (Sample 0&ndash;3)</li>
@@ -181,7 +181,7 @@
   <li>Highlight KeySampler and press <span class="keys">Enter</span> to open its parameters.</li>
 </ol>
 <div class="tip"><b>32 parameters in the menu.</b> The S2400 shows only the first 32 parameters of a plugin. KeySampler puts the 32 most-used ones there (chapter 10); the rest keep sensible defaults and several of them can be changed from a MIDI controller.</div>
-<div class="note"><b>After an update</b> that adds or changes parameters, remove KeySampler from the bus and add it again, then re-enter its settings in each project that uses it. Recordings are not affected. <b>0.36, 0.38, 0.39 and 0.40 reorder the parameters</b> (0.40 replaces Thru and Filter Env in the menu with MIDI Channel and F.Env Amount): a project saved with an earlier version loads its values into the wrong places. Use <b>Changes &rarr; Default</b> (it keeps the sound), set it up again and save the project.</div>
+<div class="note"><b>After an update</b> that adds or changes parameters, remove KeySampler from the bus and add it again, then re-enter its settings in each project that uses it. Recordings are not affected. <b>0.36 and 0.38&ndash;0.41 reorder the parameters</b> (0.41 moves Start, Loop and the LFO items to the end of the menu): a project saved with an earlier version loads its values into the wrong places. Use <b>Changes &rarr; Default</b> (it keeps the sound), set it up again and save the project.</div>
 </section>
 
 <!-- ============================================================ 3 QUICK START -->
@@ -293,7 +293,7 @@
   <tr><td>Tune</td><td>&plusmn;24 semitones, fractions allowed (0.5 = 50 cents).</td></tr>
   <tr><td>Bend Range</td><td>Pitch-bend range in semitones (0&ndash;24, default 2). Not in the S2400 menu.</td></tr>
   <tr><td>Vel Sens</td><td>Not in the S2400 menu (default 1 = full velocity response). 0 = all notes at full volume. Gain = (1 &minus; s) + s &times; (velocity/127)&sup2;.</td></tr>
-  <tr><td>Voices</td><td>Polyphony limit, 1&ndash;16. Set 1 for mono lines. When all voices are busy, releasing voices are reused first, then the oldest. Replaying a held note retriggers it.</td></tr>
+  <tr><td>Voices</td><td>Polyphony limit, 1&ndash;16 (default 8). Set 1 for mono lines. When all voices are busy, releasing voices are reused first, then the oldest. Replaying a held note retriggers it.</td></tr>
   <tr><td>Mode</td><td><b>One Shot</b> plays to the end and ignores note-off (drums). <b>Gate</b> fades out with Release when the key is let go. <b>Loop</b> repeats the loop section while the key is held, then fades out. <b>Ping-Pong</b> does the same but plays the loop section forwards and backwards in turn, so the loop never jumps.</td></tr>
 </table>
 <p>The sustain pedal (CC64) holds notes in Gate, Loop and Ping-Pong modes.</p>
@@ -374,7 +374,7 @@
   <li>Changing a value in the menu also takes over that one parameter, so the last thing touched is what you hear.</li>
   <li>Save sends the values to the DSP Card's audio engine (sushi), exactly as the menu does. Start and loop points are sent as sec / ms / smp; a Loop End at maximum is sent as 0:00.000+0 (end of sound).</li>
   <li>The S2400 shows the saved values when you re-open the plugin page. Two KeySamplers with identical settings cannot be told apart, and Save does nothing for them.</li>
-  <li><b>Changes</b> (the last menu item) acts about a second after you select Save, Restore, Default or Delete, then goes back to <b style="white-space:nowrap">---</b> (shown when you re-open the page). The short wait means passing over an entry while browsing does nothing, but there is no confirmation. A value saved in a project is never acted on when it loads.</li>
+  <li><b>Changes</b> (after Bend Range, before the Start and Loop points) acts about a second after you select Save, Restore, Default or Delete, then goes back to <b style="white-space:nowrap">---</b> (shown when you re-open the page). The short wait means passing over an entry while browsing does nothing, but there is no confirmation. A value saved in a project is never acted on when it loads.</li>
   <li>The hidden <b>Auto Menu Sync</b> (off) would copy every controller move to the menu instead.</li>
 </ul>
 
@@ -459,7 +459,7 @@
 <p>All parameters in port order; the S2400 shows the first 32 (ports 5&ndash;36). Ports 0&ndash;4 are MIDI in and audio out/in L/R. The # in the S2400's .DSP file is the port minus 5.</p>
 <table class="tight">
   <thead><tr><th class="c" style="width:9mm">Port</th><th style="width:33mm">Name</th><th style="width:30mm">Range</th><th style="width:15mm">Default</th><th style="width:17mm">PCR</th><th>Notes</th></tr></thead>
-  <tr class="grp"><td colspan="6">In the menu</td></tr>
+  <tr class="grp"><td colspan="6">In the menu (the S2400 shows the first 32)</td></tr>
   <tr><td class="c">5</td><td>Sound</td><td>Sine, Triangle, Square, Saw, Sample, 1 &ndash; 9999</td><td>Sine</td><td></td><td>Sample = own sound (Sample ID); internal 0&ndash;10003, number N = N + 4</td></tr>
   <tr><td class="c">6</td><td>Record</td><td>tick box</td><td>off</td><td></td><td>Ticked arms recording</td></tr>
   <tr><td class="c">7</td><td>Rec Threshold dB</td><td>&minus;80 &ndash; &minus;6</td><td>&minus;50</td><td></td><td>Level that starts a recording</td></tr>
@@ -467,32 +467,31 @@
   <tr><td class="c">9</td><td>Level</td><td>0 &ndash; 2</td><td>1</td><td>S8</td><td></td></tr>
   <tr><td class="c">10</td><td>Root Note</td><td>0 &ndash; 127</td><td>60</td><td></td><td>Note at original pitch</td></tr>
   <tr><td class="c">11</td><td>Tune</td><td>&minus;24 &ndash; 24</td><td>0</td><td>R7</td><td>Fractions allowed</td></tr>
-  <tr><td class="c">12</td><td>Start sec</td><td>0 &ndash; 59</td><td>0</td><td>S5</td><td></td></tr>
-  <tr><td class="c">13</td><td>Start ms</td><td>0 &ndash; 999</td><td>0</td><td>S5</td><td></td></tr>
-  <tr><td class="c">14</td><td>Loop Start sec</td><td>0 &ndash; 59</td><td>0</td><td>S6</td><td></td></tr>
-  <tr><td class="c">15</td><td>Loop Start ms</td><td>0 &ndash; 999</td><td>0</td><td>S6</td><td></td></tr>
-  <tr><td class="c">16</td><td>Loop End sec</td><td>0 &ndash; 59</td><td>0</td><td>S7</td><td>0:0 = end of the sound</td></tr>
-  <tr><td class="c">17</td><td>Loop End ms</td><td>0 &ndash; 999</td><td>0</td><td>S7</td><td></td></tr>
-  <tr><td class="c">18</td><td>Filter</td><td>Off / Low Pass / Band Pass / High Pass</td><td>Off</td><td>B1</td><td>Moog-style ladder</td></tr>
-  <tr><td class="c">19</td><td>Glide Mode</td><td>Off / Portamento / Legato</td><td>Off</td><td>B3</td><td>Legato = one note at a time</td></tr>
-  <tr><td class="c">20</td><td>Pan</td><td>&minus;1 &ndash; 1</td><td>0</td><td>R8</td><td>Balance</td></tr>
-  <tr><td class="c">21</td><td>Voices</td><td>1 &ndash; 16</td><td>16</td><td></td><td>Polyphony</td></tr>
-  <tr><td class="c">22</td><td>MIDI Channel</td><td>Omni, 1 &ndash; 16</td><td>Omni</td><td></td><td>Omni = any channel</td></tr>
-  <tr><td class="c">23</td><td>Vel Sens</td><td>0 &ndash; 1</td><td>1</td><td></td><td>Velocity response</td></tr>
-  <tr><td class="c">24</td><td>Bend Range</td><td>0 &ndash; 24</td><td>2</td><td></td><td>Semitones</td></tr>
-  <tr><td class="c">25</td><td>Start smp</td><td>0 &ndash; 95</td><td>0</td><td>S5</td><td>Fine-tune in samples</td></tr>
-  <tr><td class="c">26</td><td>Loop Start smp</td><td>0 &ndash; 95</td><td>0</td><td>S6</td><td></td></tr>
-  <tr><td class="c">27</td><td>Loop End smp</td><td>0 &ndash; 95</td><td>0</td><td>S7</td><td></td></tr>
-  <tr><td class="c">28</td><td>F.Env Amount</td><td>&minus;100 &ndash; 100</td><td>0</td><td></td><td>Cutoff units; 0 = filter envelope off</td></tr>
-  <tr><td class="c">29</td><td>Modulation</td><td>Volume / Filter / Pitch / Pan</td><td>Volume</td><td>B4/B5/B6</td><td>Which LFO the three LFO items and R3&ndash;R5 edit (and S1&ndash;S4 on Filter)</td></tr>
-  <tr><td class="c">30</td><td>LFO Rate Hz</td><td>0.1 &ndash; 12</td><td>5</td><td>R3</td><td>Of the LFO Modulation selects</td></tr>
-  <tr><td class="c">31</td><td>LFO Depth</td><td>0 &ndash; 100</td><td>0</td><td>R4</td><td>Of the LFO Modulation selects; 0 = off</td></tr>
-  <tr><td class="c">32</td><td>LFO Delay ms</td><td>0 &ndash; 2000</td><td>0</td><td>R5</td><td>Of the LFO Modulation selects</td></tr>
-  <tr><td class="c">33</td><td>Changes</td><td>--- / Save / Restore / Default / Delete</td><td>---</td><td></td><td>Acts, then back to ---</td></tr>
-  <tr class="grp"><td colspan="6">Also shown, after Changes (the S2400 always shows the first 32)</td></tr>
-  <tr><td class="c">34</td><td>Cutoff</td><td>0 &ndash; 100</td><td>100</td><td>R1</td><td></td></tr>
-  <tr><td class="c">35</td><td>Resonance</td><td>0 &ndash; 1</td><td>0</td><td>R2</td><td></td></tr>
-  <tr><td class="c">36</td><td>Glide ms</td><td>0 &ndash; 2000</td><td>100</td><td>R6</td><td></td></tr>
+  <tr><td class="c">12</td><td>Filter</td><td>Off / Low Pass / Band Pass / High Pass</td><td>Off</td><td>B1</td><td>Moog-style ladder</td></tr>
+  <tr><td class="c">13</td><td>Cutoff</td><td>0 &ndash; 100</td><td>100</td><td>R1</td><td></td></tr>
+  <tr><td class="c">14</td><td>Resonance</td><td>0 &ndash; 1</td><td>0</td><td>R2</td><td></td></tr>
+  <tr><td class="c">15</td><td>F.Env Amount</td><td>&minus;100 &ndash; 100</td><td>0</td><td></td><td>Cutoff units; 0 = filter envelope off</td></tr>
+  <tr><td class="c">16</td><td>Glide Mode</td><td>Off / Portamento / Legato</td><td>Off</td><td>B3</td><td>Legato = one note at a time</td></tr>
+  <tr><td class="c">17</td><td>Glide ms</td><td>0 &ndash; 2000</td><td>100</td><td>R6</td><td></td></tr>
+  <tr><td class="c">18</td><td>Pan</td><td>&minus;1 &ndash; 1</td><td>0</td><td>R8</td><td>Balance</td></tr>
+  <tr><td class="c">19</td><td>Voices</td><td>1 &ndash; 16</td><td>8</td><td></td><td>Polyphony</td></tr>
+  <tr><td class="c">20</td><td>MIDI Channel</td><td>Omni, 1 &ndash; 16</td><td>Omni</td><td></td><td>Omni = any channel</td></tr>
+  <tr><td class="c">21</td><td>Vel Sens</td><td>0 &ndash; 1</td><td>1</td><td></td><td>Velocity response</td></tr>
+  <tr><td class="c">22</td><td>Bend Range</td><td>0 &ndash; 24</td><td>2</td><td></td><td>Semitones</td></tr>
+  <tr><td class="c">23</td><td>Changes</td><td>--- / Save / Restore / Default / Delete</td><td>---</td><td></td><td>Acts, then back to ---</td></tr>
+  <tr><td class="c">24</td><td>Start sec</td><td>0 &ndash; 59</td><td>0</td><td>S5</td><td></td></tr>
+  <tr><td class="c">25</td><td>Start ms</td><td>0 &ndash; 999</td><td>0</td><td>S5</td><td></td></tr>
+  <tr><td class="c">26</td><td>Start smp</td><td>0 &ndash; 95</td><td>0</td><td>S5</td><td>Fine-tune in samples</td></tr>
+  <tr><td class="c">27</td><td>Loop Start sec</td><td>0 &ndash; 59</td><td>0</td><td>S6</td><td></td></tr>
+  <tr><td class="c">28</td><td>Loop Start ms</td><td>0 &ndash; 999</td><td>0</td><td>S6</td><td></td></tr>
+  <tr><td class="c">29</td><td>Loop Start smp</td><td>0 &ndash; 95</td><td>0</td><td>S6</td><td></td></tr>
+  <tr><td class="c">30</td><td>Loop End sec</td><td>0 &ndash; 59</td><td>0</td><td>S7</td><td>0:0 = end of the sound</td></tr>
+  <tr><td class="c">31</td><td>Loop End ms</td><td>0 &ndash; 999</td><td>0</td><td>S7</td><td></td></tr>
+  <tr><td class="c">32</td><td>Loop End smp</td><td>0 &ndash; 95</td><td>0</td><td>S7</td><td></td></tr>
+  <tr><td class="c">33</td><td>Modulation</td><td>Volume / Filter / Pitch / Pan</td><td>Volume</td><td>B4/B5/B6</td><td>Which LFO the three LFO items and R3&ndash;R5 edit (and S1&ndash;S4 on Filter)</td></tr>
+  <tr><td class="c">34</td><td>LFO Rate Hz</td><td>0.1 &ndash; 12</td><td>5</td><td>R3</td><td>Of the LFO Modulation selects</td></tr>
+  <tr><td class="c">35</td><td>LFO Depth</td><td>0 &ndash; 100</td><td>0</td><td>R4</td><td>Of the LFO Modulation selects; 0 = off</td></tr>
+  <tr><td class="c">36</td><td>LFO Delay ms</td><td>0 &ndash; 2000</td><td>0</td><td>R5</td><td>Of the LFO Modulation selects</td></tr>
   <tr class="grp"><td colspan="6">Hidden: saved with the project, set from the PCR, the LFO items or left at the default</td></tr>
   <tr><td class="c">37</td><td>Thru</td><td>tick box</td><td>on</td><td></td><td>Bus input to output</td></tr>
   <tr><td class="c">38</td><td>Filter Env</td><td>tick box</td><td>on</td><td></td><td>Master switch for the filter envelope</td></tr>
@@ -629,7 +628,7 @@
 <!-- ============================================================ APPENDIX B -->
 <section class="chapter">
 <h2><span class="n">B</span>MIDI implementation chart</h2>
-<p class="small">Model: KeySampler 0.40 (LV2 plugin for the S2400 DSP Card) &nbsp;·&nbsp; Date: 28 October 2026 &nbsp;·&nbsp; <span class="o">O</span> = yes, <span class="x">X</span> = no<br>* S1&ndash;S4: volume or filter envelope (B5). Reception depends on what the S2400 forwards to the DSP bus.</p>
+<p class="small">Model: KeySampler 0.41 (LV2 plugin for the S2400 DSP Card) &nbsp;·&nbsp; Date: 28 October 2026 &nbsp;·&nbsp; <span class="o">O</span> = yes, <span class="x">X</span> = no<br>* S1&ndash;S4: volume or filter envelope (B5). Reception depends on what the S2400 forwards to the DSP bus.</p>
 <table class="chart">
   <thead><tr><th style="width:44mm">Function</th><th style="width:28mm" class="c">Transmitted</th><th style="width:44mm">Recognized</th><th>Remarks</th></tr></thead>
   <tr class="grp"><td colspan="4">Basic channel</td></tr>
@@ -694,7 +693,7 @@
 <table>
   <tr><td style="width:52mm">Plugin format</td><td>LV2 instrument, aarch64, needs glibc 2.17 or newer and the urid:map feature</td></tr>
   <tr><td>Ports</td><td>1 MIDI in (atom sequence), 2 audio in, 2 audio out, 42 controls</td></tr>
-  <tr><td>Polyphony</td><td>16 voices (1 in Legato), cubic (Hermite) interpolation; glide linear in semitones</td></tr>
+  <tr><td>Polyphony</td><td>1&ndash;16 voices (Voices, default 8; 1 in Legato), cubic (Hermite) interpolation; glide linear in semitones</td></tr>
   <tr><td>Filter</td><td>4-pole Moog-style ladder per voice, LP / BP / HP, 20 Hz &ndash; 20 kHz, ADSR envelope</td></tr>
   <tr><td>Oscillators</td><td>Sine, triangle, square, sawtooth; 2048-point tables, one band-limited table per octave (harmonics &lt; 20 kHz)</td></tr>
   <tr><td>Recording</td><td>Up to 30 s, threshold &minus;80 to &minus;6 dB, 0.7 ms pre-roll, 0.4 s silence stop</td></tr>
